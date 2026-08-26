@@ -1,0 +1,38 @@
+generated: '2026-08-26'
+method: generated
+source: >-
+  Authored from the 17 harvested Optoro OpenAPI definitions in openapi/ plus
+  https://developer.optoro.com/content/api_overview, /content/webhooks, /content/rm_integration_guide and
+  /content/rx_integration_guide. Optoro publishes no skills, no AGENTS.md and no llms-full corpus of its own —
+  its /llms.txt is a table of contents only, saved verbatim at llms/optoro-llms.txt.
+note: >-
+  Every operationId referenced in these skills was grepped out of the harvested specs; none is invented.
+  Skills carry Optoro's real constraints — the 25-hour shared token, the absence of an idempotency key, the
+  pending_payment cancellation window, the destructive-overwrite behaviour of the Catalogs upsert, and the
+  at-least-once webhook contract — because those are the facts an agent gets wrong first.
+skills:
+- name: optoro-authenticate
+  file: optoro-authenticate.md
+  api: Optoro Auth API
+  summary: Obtain and reuse the OAuth 2.0 client-credentials token that every Optoro API accepts.
+  operations: [oauthTokenFetch]
+- name: optoro-sync-catalog
+  file: optoro-sync-catalog.md
+  api: Optoro Returns Processing APIs
+  summary: Publish product master data so returns can be dispositioned, routed and resold — including the destructive-overwrite caution.
+  operations: [oauthTokenFetch, catalogEntryUpdate]
+- name: optoro-drop-ship-order
+  file: optoro-drop-ship-order.md
+  api: Optoro Drop Ship API
+  summary: Browse resale listings, place and batch orders, track shipments, and cancel inside the pending_payment window.
+  operations: [listingsIndex, listingsShow, listingsUpdate, ordersCreate, batchOrdersCreate, OrdersIndex, ordersShow, ordersUpdate, ordersCancel, shipmentsIndex, shipmentsShow, shipmentsShowByIdentifier]
+- name: optoro-returns-experience
+  file: optoro-returns-experience.md
+  api: Optoro Returns Experience APIs
+  summary: Push order snapshots into the returns portal and implement the RMA, Exchange Orders and Exchange Variants callbacks Optoro calls back on.
+  operations: [returns_portal_orders, rmas, exchange_orders, variants]
+- name: optoro-warehouse-events
+  file: optoro-warehouse-events.md
+  api: Optoro Returns Processing APIs
+  summary: Register facilities and RTV vendors, announce inbound ASNs, move units between bins, and consume disposition and outbound-ASN events.
+  operations: [upsertFacility, vendorUpdate, createExternalBinChange, showExternalBinChange, dispositions, final_dispositions, outbound_asns]

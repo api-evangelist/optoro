@@ -1,0 +1,183 @@
+generated: '2026-08-26'
+method: derived
+status: candidate
+source: openapi/*.yml — inbound (customer-to-Optoro) operations only
+note: 'Optoro publishes NO MCP server. Searched the developer portal (all four content pages plus the llms.txt
+  table of contents), the optoro GitHub organization (24 public repos, none MCP-related), npm for "optoro"
+  and "optiturn", and the web for an Optoro/OptiTurn MCP endpoint — nothing exists. The tools below are a DERIVED
+  candidate surface, one tool per inbound OpenAPI operation, so an agent builder can see what an Optoro MCP
+  server would expose; each inherits its real input schema from the backing operation. No endpoint URL is asserted
+  because none exists. The eight outbound webhook / customer-endpoint definitions are deliberately excluded
+  — those are operations OPTORO calls on the customer, not tools an agent could invoke. Note also that no tool
+  here is self-serve reachable: credentials are issued manually by Optoro Client Success.'
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: searched
+server:
+  name: optoro
+  transport: null
+  url: null
+auth_model:
+  scheme: oauth2 client_credentials
+  token_endpoint: https://auth.optiturn.com/oauth/token
+  self_serve: false
+tool_count: 22
+tools:
+- name: post_asns
+  description: Create an ASN
+  category: inbound-shipping
+  method: POST
+  path: /asns
+  source_operation: openapi/optoro-asn-openapi.yml#post /asns
+  write: true
+- name: put_asns_asn_number
+  description: Update an ASN
+  category: inbound-shipping
+  method: PUT
+  path: /asns/{asn-number}
+  source_operation: openapi/optoro-asn-openapi.yml#put /asns/{asn-number}
+  write: true
+- name: oauth_token_fetch
+  description: Fetch Token
+  category: auth
+  method: POST
+  path: /oauth/token
+  source_operation: openapi/optoro-auth-openapi.yml#oauthTokenFetch
+  write: true
+- name: catalog_entry_update
+  description: Create / Update Catalog Entry
+  category: catalog
+  method: POST
+  path: /catalog_entry_updates
+  source_operation: openapi/optoro-catalogs-openapi.yml#catalogEntryUpdate
+  write: true
+- name: listings_index
+  description: List listings
+  category: drop-ship
+  method: GET
+  path: /listings
+  source_operation: openapi/optoro-drop-ship-openapi.yml#listingsIndex
+  write: false
+- name: listings_show
+  description: Show listings by identifier
+  category: drop-ship
+  method: GET
+  path: /listings/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#listingsShow
+  write: false
+- name: listings_update
+  description: Update Listing quantity
+  category: drop-ship
+  method: PUT
+  path: /listings/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#listingsUpdate
+  write: true
+- name: orders_index
+  description: List orders
+  category: drop-ship
+  method: GET
+  path: /orders
+  source_operation: openapi/optoro-drop-ship-openapi.yml#OrdersIndex
+  write: false
+- name: orders_create
+  description: Create an order
+  category: drop-ship
+  method: POST
+  path: /orders
+  source_operation: openapi/optoro-drop-ship-openapi.yml#ordersCreate
+  write: true
+- name: batch_orders_create
+  description: Create orders in batches
+  category: drop-ship
+  method: POST
+  path: /batch/orders
+  source_operation: openapi/optoro-drop-ship-openapi.yml#batchOrdersCreate
+  write: true
+- name: orders_show
+  description: Show an order by identifier
+  category: drop-ship
+  method: GET
+  path: /orders/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#ordersShow
+  write: false
+- name: orders_update
+  description: Update an order by identifier
+  category: drop-ship
+  method: PUT
+  path: /orders/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#ordersUpdate
+  write: true
+- name: orders_cancel
+  description: Cancel an order by identifier
+  category: drop-ship
+  method: DELETE
+  path: /orders/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#ordersCancel
+  write: true
+- name: shipments_index
+  description: Lists shipments
+  category: drop-ship
+  method: GET
+  path: /shipments
+  source_operation: openapi/optoro-drop-ship-openapi.yml#shipmentsIndex
+  write: false
+- name: shipments_show
+  description: Show details of a shipment
+  category: drop-ship
+  method: GET
+  path: /shipments/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#shipmentsShow
+  write: false
+- name: shipments_show_by_identifier
+  description: Show list of the shipments for an order
+  category: drop-ship
+  method: GET
+  path: /shipments/identifier/{id}
+  source_operation: openapi/optoro-drop-ship-openapi.yml#shipmentsShowByIdentifier
+  write: false
+- name: create_external_bin_change
+  description: Perform a bin-change for a unit or a location.
+  category: warehouse
+  method: POST
+  path: /external_bin_changes
+  source_operation: openapi/optoro-external-bin-changes-openapi.yml#createExternalBinChange
+  write: true
+- name: show_external_bin_change
+  description: Show information that is relevant for bin-changing of a unit or location.
+  category: warehouse
+  method: GET
+  path: /external_bin_changes/{id}
+  source_operation: openapi/optoro-external-bin-changes-openapi.yml#showExternalBinChange
+  write: false
+- name: upsert_facility
+  description: Create / Update Facility
+  category: facilities
+  method: POST
+  path: /facilities
+  source_operation: openapi/optoro-facilities-openapi.yml#upsertFacility
+  write: true
+- name: post_inventory_receipt
+  description: Create Inventory Receipt
+  category: inbound-shipping
+  method: POST
+  path: /inventory_receipt
+  source_operation: openapi/optoro-inventory-receipt-openapi.yml#post /inventory_receipt
+  write: true
+- name: returns_portal_orders
+  description: Create Returns Portal Orders
+  category: returns-portal
+  method: POST
+  path: /returns_portal_orders
+  source_operation: openapi/optoro-returns-portal-orders-openapi.yml#returns_portal_orders
+  write: true
+- name: vendor_update
+  description: Create or update a vendor
+  category: vendor
+  method: POST
+  path: /vendor_updates
+  source_operation: openapi/optoro-rtv-openapi.yml#vendorUpdate
+  write: true

@@ -1,0 +1,41 @@
+generated: '2026-08-26'
+method: probed
+source: live GET probes of /.well-known/* on every Optoro/OptiTurn host in apis.yml
+note: >-
+  Every probed path returned 404. developer.optoro.com is a Redocly-hosted portal whose 404 page is a
+  219KB HTML shell served with HTTP 404 (so it is a true negative, not a soft-200 catch-all);
+  www.optoro.com is WordPress behind nginx and returns a short 404 body; auth.optiturn.com returns a
+  Rails 404 page. No .well-known document was served anywhere, so NO WellKnown or SecurityTxt pointer
+  is emitted in apis.yml — this file records a verified absence.
+hit_count: 0
+hosts:
+- host: https://developer.optoro.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: https://www.optoro.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: https://auth.optiturn.com
+  documents:
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+- host: https://optiturn.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404

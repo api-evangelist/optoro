@@ -1,0 +1,964 @@
+openapi: 3.1.0
+info:
+  title: RMAs
+  description: >
+    ## Introduction
+
+
+    When an RMA event occurs in the returns portal, Optoro will notify your
+    webhook about the RMA and its details.
+
+    These events can be at the time your customer has created an RMA or when the
+    RMA has been shipped.
+
+
+    Optoro's system will make an HTTP POST request to the API endpoint at the
+    configured URL.
+
+    The API endpoint will need to return an HTTP 200-299 status for a webhook to
+    be considered successful.
+
+
+    See the [Webhook Message
+    Behaviors](../../../content/webhooks/#message-behaviors) for more details
+    about aspects to consider regarding message delivery.
+
+
+    ## When it is used
+
+
+    - Optoro posts an **RMAs** message to you when the shopper initiates a
+    return.
+
+    - Optoro posts an **RMAs** message to you when carrier tracking details are
+    provided (when applicable).
+
+    - Optoro posts an **RMAs** message to you when the carrier receives and
+    scans the return.
+
+    - Optoro posts an **RMAs** message when the shopper drops off the return at
+    a drop-off location or when a pick-up partner picks up the return from the
+    shopper.
+
+    - Optoro posts an **RMAs** message when the item is received (and ready for
+    refund) when you also use Optoro’s Returns Management solution.
+
+    - Optoro posts an **RMAs** message to you after you update the order with
+    refund details in the Refunds object of the **Returns Portal Order** API.
+
+
+    ## Changelog
+
+
+    ### Version 5
+
+
+    * FEATURE: The `warehouse_receipt_condition` item field is added to the RMA
+    item object.
+
+    * FEATURE: `NOT_DROPPED_OFF` is a new option for item's
+    `package_tracking_status` (applicable for items in a partially accepted RMA
+    that were not dropped off).
+  version: 5.0.0
+paths:
+  /rmas:
+    post:
+      summary: RMA Event
+      operationId: rmas
+      parameters:
+        - in: header
+          name: X-Optiturn-Id
+          schema:
+            type: string
+          required: true
+          example: Modrno
+        - in: header
+          name: X-Optiturn-Api-Version
+          schema:
+            type: string
+            enum:
+              - 3
+          required: true
+      requestBody:
+        description: >
+          The RMA webhook provides details of the return as it progresses
+          through the various lifecycle events.
+
+
+          On the right you will find example payloads listed that correspond to
+          a specific type of the return.  These are not inclusive of events that
+          could happen on the RMA such as a warehouse receipt or tracking event.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/rma'
+            examples:
+              basic_rma:
+                summary: Created RMA for a Refund
+                description: >-
+                  A shopper created an RMA and selected all items to be refunded
+                  to the shopper's original form of payment.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      exchange_order_identifier: eoid23456
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              refunded_rma:
+                summary: Refunded RMA
+                description: >
+                  An RMA moves to Refunded when any of the following are true.
+
+                  1. When all items in the RMA have a refund type of REFUND and
+                  Optoro has received refunds on the original order for all
+                  items in the RMA.
+
+                  2. When all items in the RMA have a refund type of
+                  INSTANT_EXCHANGE or STANDARD_EXCHANGE and Optoro has received
+                  fulfillment of the exchange order for all exchange items in
+                  the RMA.
+
+                  3. When all items in the RMA have a refund type of
+                  INSTANT_STORE_CREDIT and Optoro has successfully created the
+                  exchange order for the instant gift card.
+
+                  4. When the RMA includes items that have a refund type of
+                  REFUND and (INSTANT_EXCHANGE or STANDARD_EXCHANGE) and both
+                  scenario #1 and #2 conditions are met.
+
+                  5. When the RMA includes items that have a refund type of
+                  INSTANT_EXCHANGE and INSTANT_STORE_CREDIT and both scenario #2
+                  and #3 conditions are met.
+                value:
+                  rma_identifier: rma1234
+                  status: REFUNDED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      exchange_order_identifier: eoid23456
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              partial_refund_rma:
+                summary: Partial Refund RMA
+                description: |
+                  **Returns Processing Only:**
+                   1. PARTIAL_REFUND will be used when warehouse receiving was closed for the RMA and Optoro did not receive refunds for all items with refund_type REFUND by then on the related order.
+
+                   2. If exchange order items for RMA items with refund_type INSTANT_EXCHANGE or STANDARD_EXCHANGE do not get fulfilled, these items will be converted to refund_type "REFUND" and Optoro expects refunds for these items on the original order. Same as in 1. applies.
+                value:
+                  rma_identifier: rma1234
+                  status: PARTIAL_REFUND
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      exchange_order_identifier: eoid23456
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              partially_accepted_rma:
+                summary: Partially Accepted RMA
+                description: >-
+                  The following fields represent the RMA webhook updates when an
+                  RMA is initiated as partially accepted. The RMA status will
+                  update to REFUNDED or PARTIAL_REFUND, depending on whether all
+                  items are refunded or exchanged.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      exchange_order_identifier: eoid23456
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: NOT_DROPPED_OFF
+                      receiving_status: NOT_RECEIVED
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: ACCEPTED
+                      receiving_status: RECEIVED
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: express-returns
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              canceled_rma:
+                summary: Canceled RMA
+                description: >-
+                  The following fields represent the RMA webhook updates when an
+                  RMA is canceled.
+                value:
+                  rma_identifier: rma1234
+                  status: CANCELED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      exchange_order_identifier: eoid23456
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              standard_exchange_initiated_rma:
+                summary: Pending standard exchange order.
+                description: >-
+                  The following fields represent the RMA webhook updates when an
+                  RMA is initiated as a standard exchange. The RMA will remain
+                  in status PENDING_EXCHANGE until its exchange order was
+                  successfully placed, the RMA was canceled, or was converted to
+                  a Refund.
+                value:
+                  rma_identifier: rma1234
+                  status: PENDING_EXCHANGE
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: STANDARD_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              standard_exchange_rma:
+                summary: Created standard exchange order.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's standard exchange order has been placed.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: STANDARD_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              instant_exchange_rma:
+                summary: Created instant exchange order.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's instant exchange order has been placed.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: INSTANT_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              instant_gift_card_rma:
+                summary: Created instant gift card order.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's instant gift card order has been placed.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: INSTANT_STORE_CREDIT
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 500
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              instant_exchange_with_instant_gift_card_rma:
+                summary: >-
+                  Created the exchange order for an instant exchange and instant
+                  gift card.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's instant exchange and instant gift card order has
+                  been placed.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: INSTANT_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: INSTANT_STORE_CREDIT
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 500
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              standard_exchange_initiated_with_refund_rma:
+                summary: Pending standard exchange order and a refund for an item.
+                description: >-
+                  The following fields represent the RMA webhook updates when an
+                  RMA is initiated with a standard exchange and requests a
+                  refund for an item.
+                value:
+                  rma_identifier: rma1234
+                  status: PENDING_EXCHANGE
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: STANDARD_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              standard_exchange_with_refund_rma:
+                summary: Created standard exchange order and a refund for an item.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's standard exchange order has been placed and requests
+                  a refund for an item.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: STANDARD_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+              instant_exchange_with_refund_rma:
+                summary: Created instant exchange order and a refund for an item.
+                description: >-
+                  The following fields represent the RMA webhook updates when
+                  the RMA's instant exchange order has been placed and requests
+                  a refund for an item.
+                value:
+                  rma_identifier: rma1234
+                  status: CREATED
+                  created_at: '2018-08-30T15:39:42.025Z'
+                  updated_at: '2018-08-30T15:39:42.025Z'
+                  items:
+                    - order_line_item_identifier: '1'
+                      order_identifier: o12345
+                      secondary_identifier: soi12345
+                      original_order_identifier: ooid3456
+                      exchange_order_identifier: e9876
+                      return_reason: Too Small
+                      is_exchange: true
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 1000
+                        shopper_refund_amount_cents: 0
+                      refund_type: INSTANT_EXCHANGE
+                      warehouse_receipt_condition: 'N'
+                    - order_line_item_identifier: '2'
+                      order_identifier: o12345
+                      return_reason: Too Small
+                      sku: Sku1234
+                      upc: UPC1234
+                      tracking_number: 1Z403818413131
+                      package_tracking_status: PRE_TRANSIT
+                      receiving_status: PENDING
+                      refund_financials:
+                        estimated_refund_amount_cents: 1000
+                        optoro_refund_amount_cents: 0
+                        shopper_refund_amount_cents: 1000
+                      refund_type: REFUND
+                      warehouse_receipt_condition: 'N'
+                  return_method: mail-back
+                  return_shipping_cost_cents: 100
+                  bonus_credit_amount_cents: 0
+                  receiving_complete: false
+                  gift_refund_only: false
+                  giftee_email: testemail@domain.com
+                  warehouse_id: '1'
+                  vendor: modrno
+                  concept: concept
+                  customer:
+                    tags:
+                      - gold_tier_member
+      responses:
+        '200':
+          description: Success
+components:
+  schemas:
+    rma_item:
+      required:
+        - order_line_item_identifier
+        - order_identifier
+        - refund_financials
+        - refund_type
+        - return_reason
+        - sku
+        - upc
+      type: object
+      properties:
+        order_line_item_identifier:
+          description: The item's identifier in the order.
+          type: string
+          example: '1'
+        order_identifier:
+          description: Public facing identifier for the order.
+          type: string
+          example: O9876
+        secondary_identifier:
+          description: >-
+            OMS or backend system identifier for the original order.  Used when
+            ecommerce and fulfillment platforms have unique identifiers.
+          type: string
+          example: STVMD0123
+        exchange_order_identifier:
+          description: >-
+            The identifier of the exchange order. Used when the item being
+            returned was chosen to be exchanged.
+          type: string
+          example: ''
+        original_order_identifier:
+          description: >-
+            Only populated when returning an exchange item. Refers back to the
+            order that was exchanged.
+          type: string
+          example: ''
+        return_reason:
+          description: The shopper chosen reason for returning the item.
+          type: string
+          example: Too Small
+        is_exchange:
+          type: boolean
+          description: Indicates whether the RMA item belongs to an exchange order
+          example: false
+        sku:
+          description: Unique product identifier of item.
+          type: string
+          example: Sku1234
+        upc:
+          description: Unique product code of item.
+          type: string
+          example: '00123456789012'
+        tracking_number:
+          description: Tracking number of the package the item is located in.
+          type: string
+          example: 1Z938174729103
+        package_tracking_status:
+          description: >-
+            The status of the package that the RMA item is in. For Express
+            Returns, ACCEPTED is when item has been accepted at a dropoff
+            location. However, NOT_DROPPED_OFF is when item has not been dropped
+            off in a partially accepted RMA. For Home Pickups, ACCEPTED is when
+            the item has been picked up by a pickup provider. Upon carrier scan
+            a package status can be moved to TRANSIT
+          type: string
+          enum:
+            - null
+            - PRE_TRANSIT
+            - ACCEPTED
+            - TRANSIT
+            - DELIVERED
+            - RETURNED
+            - FAILURE
+            - NOT_DROPPED_OFF
+        receiving_status:
+          description: >-
+            The item's receiving status.  Only populated when using Optoro's
+            Returns Management.
+          type: string
+          enum:
+            - PENDING
+            - RECEIVED
+            - NOT_RECEIVED
+        refund_financials:
+          required:
+            - estimated_refund_amount_cents
+            - optoro_refund_amount_cents
+            - shopper_refund_amount_cents
+          type: object
+          description: >-
+            RMA item financial information used for calculating the refund
+            amount.
+          properties:
+            estimated_refund_amount_cents:
+              description: Total possible refund amount based on goods returned.
+              type: integer
+              example: 100
+            optoro_refund_amount_cents:
+              description: Amount Optoro will be paid based on instant exchange usage.
+              type: integer
+              example: 0
+            shopper_refund_amount_cents:
+              description: >-
+                Estimated amount the shopper will be refunded based on instant
+                exchange usage.
+              type: integer
+              example: 100
+        refund_type:
+          description: The refund type for the item.
+          type: string
+          enum:
+            - REFUND
+            - STANDARD_EXCHANGE
+            - INSTANT_EXCHANGE
+            - INSTANT_STORE_CREDIT
+        warehouse_receipt_condition:
+          description: The condition of the item when it was received at the warehouse.
+          type: string
+          example: 'N'
+    rma:
+      type: object
+      required:
+        - rma_identifier
+        - created_at
+        - items
+        - status
+        - return_shipping_cost_cents
+        - bonus_credit_amount_cents
+        - return_method
+        - gift_refund_only
+      properties:
+        rma_identifier:
+          description: Identifier of the RMA.
+          type: string
+          example: RMA123
+        status:
+          description: The status of the RMA.
+          type: string
+          enum:
+            - PENDING_EXCHANGE
+            - CREATED
+            - REFUNDED
+            - PARTIAL_REFUND
+            - CANCELED
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        updated_at:
+          description: Last updated date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        items:
+          description: List of items that are being returned in the RMA.
+          type: array
+          items:
+            $ref: '#/components/schemas/rma_item'
+        return_method:
+          description: Return method used to return the RMA.
+          type: string
+          enum:
+            - mail-back
+            - express-returns
+            - customer-keep
+            - home-pickup
+          example: mail-back
+        return_shipping_cost_cents:
+          description: The return shipping cost.
+          type: integer
+          example: 100
+        bonus_credit_amount_cents:
+          description: The bonus credit granted to the shopper.
+          type: integer
+          example: 500
+        gift_refund_only:
+          description: >-
+            If true, only issue a gift card and do not refund original purchase
+            payment.
+          type: boolean
+          example: true
+        giftee_email:
+          description: Email to send gift card when gift_refund_only is true
+          type: string
+          example: giftee@example.com
+        warehouse_id:
+          description: >-
+            Warehouse that return goods will be shipped to when using dynamic
+            package routing
+          type: string
+          example: ''
+        receiving_complete:
+          description: This is for RM only.
+          type: boolean
+          example: false
+        concept:
+          description: RMA portal identifier
+          type: string
+          example: concept_!
+        vendor:
+          description: >-
+            Vendor name from third party tag. Only present if any of the
+            products of the corresponding order has this type of tag.
+          type: string
+          example: modrno
+        customer:
+          description: Customer details
+          type: object
+          properties:
+            tags:
+              description: List of customer tags from the order associated with this RMA.
+              type: array
+              items:
+                type: string
+              example:
+                - some-customer-tag
+                - SilverTier

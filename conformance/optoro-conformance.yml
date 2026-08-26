@@ -1,0 +1,165 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  openapi/*.yml securitySchemes, responses and schemas; https://developer.optoro.com/content/api_overview;
+  https://developer.optoro.com/content/webhooks; https://www.optoro.com/security/
+docs:
+- https://developer.optoro.com/content/api_overview
+- https://www.optoro.com/security/
+standards:
+- id: oauth2
+  name: OAuth 2.0
+  conforms: true
+  evidence: >-
+    components.securitySchemes.oAuth2 declares type oauth2 with a clientCredentials flow and
+    tokenUrl https://auth.optiturn.com/oauth/token in openapi/optoro-catalogs-openapi.yml,
+    optoro-drop-ship-openapi.yml, optoro-facilities-openapi.yml and optoro-rtv-openapi.yml. The API
+    Overview documents the RFC 6749 client-credentials grant end to end with a live request/response example.
+- id: oauth2-client-credentials
+  name: OAuth 2.0 Client Credentials Grant (RFC 6749 §4.4)
+  conforms: true
+  evidence: 'POST /oauth/token with grant_type=client_credentials, client_id, client_secret; response carries
+    access_token, token_type=Bearer, expires_in, scope, created_at (openapi/optoro-auth-openapi.yml#oauthTokenFetch)'
+- id: oauth2-bearer-tokens
+  name: OAuth 2.0 Bearer Token Usage (RFC 6750)
+  conforms: true
+  evidence: "'Authorization: bearer {access_token}' documented as the standard header for every Optoro API"
+- id: oidc
+  name: OpenID Connect
+  conforms: false
+  evidence: >-
+    No openIdConnect securityScheme in any spec; /.well-known/openid-configuration on auth.optiturn.com
+    returns 404. Optoro is server-to-server only — there is no end-user login flow in the API.
+- id: rfc8414-oauth-metadata
+  name: OAuth 2.0 Authorization Server Metadata (RFC 8414)
+  conforms: false
+  evidence: https://auth.optiturn.com/.well-known/oauth-authorization-server returned 404
+- id: rfc9457-problem-details
+  name: Problem Details for HTTP APIs (RFC 9457 / RFC 7807)
+  conforms: false
+  evidence: >-
+    No response in any of the 17 definitions uses application/problem+json. Errors are application/json
+    with a proprietary {message, errors[{field, code}]} envelope — see errors/optoro-problem-types.yml.
+- id: rfc9116-security-txt
+  name: security.txt
+  conforms: false
+  evidence: /.well-known/security.txt returned 404 on optoro.com, www.optoro.com, developer.optoro.com and optiturn.com
+- id: rfc8594-sunset-header
+  name: Sunset HTTP Header
+  conforms: false
+  evidence: >-
+    No Sunset or Deprecation response header is declared or documented. Deprecation is signalled only in the
+    spec (Forward Orders carries deprecated:true and "(DEPRECATED)" in info.title).
+- id: rfc6585-429
+  name: Additional HTTP Status Codes — 429 Too Many Requests
+  conforms: true
+  evidence: 'API Overview documents 429 for rate limiting; no Retry-After is sent, so the RFC 6585 §4 optional header is absent'
+- id: idempotency-key
+  name: Idempotency-Key header (draft-ietf-httpapi-idempotency-key)
+  conforms: false
+  evidence: >-
+    No Idempotency-Key parameter in any spec and no idempotency contract in the docs for inbound APIs.
+    Idempotency is required of the CONSUMER instead (Exchange Orders callback keyed on original_order_id).
+- id: json-api
+  name: JSON:API
+  conforms: false
+  evidence: No JSON:API media type, top-level data/errors envelope, or link objects
+- id: openapi-3
+  name: OpenAPI Specification 3.x
+  conforms: true
+  evidence: >-
+    17 definitions published on the developer portal — 12 at OpenAPI 3.0.3, 1 at 3.0.0 and 5 at 3.1.0 —
+    each retrievable as raw YAML from https://developer.optoro.com/_spec/openapi/<api>/openapi.yaml
+- id: asyncapi
+  name: AsyncAPI
+  conforms: false
+  evidence: >-
+    Optoro documents an extensive event surface but publishes no AsyncAPI document; the webhook payloads are
+    described as OpenAPI POST operations against a customer-hosted endpoint instead.
+    See asyncapi/optoro-webhooks.yml.
+- id: tls-1-2
+  name: TLS 1.2 minimum
+  conforms: true
+  evidence: >-
+    "Optoro only supports communication between servers via HTTPs using TLS 1.2"; certificates issued by
+    Google Trust Services and Let's Encrypt (https://developer.optoro.com/content/api_overview).
+    Probed hosts negotiate TLS 1.3 — see security/optoro-domain-security.yml.
+- id: soc2-type2
+  name: SOC 2 Type 2
+  conforms: true
+  evidence: >-
+    "Optoro has achieved SOC2 Type 2 compliance. Please contact us to obtain our report."
+    (https://www.optoro.com/security/). Report is available under NDA, not published.
+- id: third-party-pentest
+  name: Annual independent penetration testing
+  conforms: true
+  evidence: '"We perform an independent third-party penetration test at least annually" (https://www.optoro.com/security/)'
+- id: iso-27001
+  name: ISO/IEC 27001
+  conforms: false
+  evidence: Not named anywhere on https://www.optoro.com/security/ or elsewhere on the site
+- id: pci-dss
+  name: PCI DSS
+  conforms: false
+  evidence: Not claimed. Optoro does not handle card data in these APIs; refunds are settled by the retailer's own OMS.
+- id: gdpr
+  name: GDPR
+  conforms: false
+  evidence: >-
+    Not claimed as a compliance program on the security page. The privacy policy at
+    https://www.optoro.com/privacy-policy/ is the only data-protection document published; all data is hosted
+    on Google Cloud Platform in the United States per the security page.
+domain_standards:
+- id: gs1-upc-gtin
+  name: GS1 UPC / GTIN product identification
+  conforms: true
+  strength: identifier-vocabulary
+  evidence: >-
+    The Catalogs API (2023-08-01) models product identity as `product_identifiers.items[].type`, an enum of
+    `upc` | `asin` | `generic`, and documents `upc` as "Universal Product Code. A barcode number that is
+    usually 8, 12, 13, or 14 characters" — i.e. GTIN-8/12/13/14. The published request example carries
+    `{"value": "012345678905", "type": "upc"}`, a valid UPC-A. openapi/optoro-catalogs-openapi.yml lines
+    ~240-280 and ~749-754.
+  note: >-
+    This is an identifier-scheme adoption expressed in the contract, not a protocol-level standard signature
+    of the kind the rubric enumerates (SCIM URN, OData $metadata, OpenRTB endpoint, Sparkplug namespace).
+    Recorded because it is the one genuine cross-vendor interoperability vocabulary Optoro's contract
+    declares; do not over-read it.
+- id: ansi-x12-856-asn
+  name: ANSI ASC X12 856 Advance Ship Notice
+  conforms: false
+  evidence: >-
+    Optoro's Inbound ASN and Outbound ASN APIs use the ASN concept and vocabulary (asn-number, carrier,
+    shipment, tracking) but expose it as bespoke JSON over HTTPS. No X12, EDIFACT, or GS1 EPCIS segment,
+    envelope or message-type reference appears in any of the 17 definitions. A retailer already speaking
+    EDI 856 needs a bilateral connector.
+- id: gs1-epcis
+  name: GS1 EPCIS
+  conforms: false
+  evidence: No EPCIS event vocabulary (bizStep, disposition URNs) — Optoro's `disposition` is a proprietary enum
+- id: odata
+  name: OData
+  conforms: false
+  evidence: No $metadata endpoint or OData query options
+- id: scim
+  name: SCIM 2.0
+  conforms: false
+  evidence: No SCIM schema URN; Optoro publishes no user-provisioning API
+compliance_program:
+  published: true
+  url: https://www.optoro.com/security/
+  certifications:
+  - SOC 2 Type 2
+  program_elements:
+  - Information Security Program with documented roles and responsibilities
+  - Independent third-party assessments
+  - Annual third-party penetration testing
+  - Security awareness training and confidentiality agreements for all staff
+  - Background checks
+  - Google Cloud Platform hosting, US-only data residency
+  - Encryption at rest and in transit
+  - Vulnerability scanning, logging and monitoring
+  - Documented incident response with escalation procedures
+  - SSO / 2FA, least-privilege access control, quarterly access reviews
+  - Annual risk assessments and vendor risk management
+  report_access: under NDA on request — the SOC 2 report itself is not published

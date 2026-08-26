@@ -1,0 +1,226 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: RTV Vendor API
+  description: >
+    Retailers typically have Return To Vendor (RTV) agreements with their
+    suppliers that cover how much unsold or returned inventory can be returned
+    to the supplier for a set refund. The Vendor API endpoint lets clients
+    provide Optoro with data on their Return To Vendor agreements so Optoro can
+    ensure these high value agreements are fully utilized as fast as possible.
+
+    The Vendor API allows the creation and modification of vendor data. This API
+    is meant to update a single vendor record at a time.
+
+    The updates can also control the default eligibility of the vendor.
+  contact:
+    name: Returns Management - Storage
+    email: returns-management@optoro.com
+servers:
+  - url: https://rtv.optiturn.com
+    description: Production
+  - url: https://rtv.sandbox.optiturn.com
+    description: Sandbox
+components:
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}
+paths:
+  /vendor_updates:
+    post:
+      summary: Create or update a vendor
+      description: >
+        A vendor is identified by its vendor identifier. If a vendor is found
+        the vendor is updated with the provided data. If a vendor is not found,
+        a new one is created.
+      security:
+        - oAuth2: []
+      operationId: vendorUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vendor_update:
+                  type: object
+                  required:
+                    - name
+                    - vendor_identifier
+                    - client_identifier
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      example: Abc Vendors
+                    vendor_identifier:
+                      type: string
+                      minLength: 1
+                      example: abc-vendors
+                    client_identifier:
+                      type: string
+                      minLength: 1
+                      example: 123
+                    eligibility:
+                      type: string
+                      enum:
+                        - forced
+                        - eligible
+                        - prohibited
+                      example: forced
+                    additional_policy:
+                      type: string
+                      enum:
+                        - 'null'
+                        - vendor_allowance
+                        - debit_and_destroy
+                      example: vendor_allowance
+                    notes:
+                      type: string
+                      example: Only accepts shipments on Tuesdays.
+                    manufacturer_name:
+                      type: string
+                      example: ABC Vendors Inc.
+                    billing_info:
+                      type: string
+                      example: credit
+                    vendor_contact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Abc Vendors
+                        email:
+                          type: string
+                          example: abcvendors@gmail.com
+                        phone:
+                          type: string
+                          example: '2234842321'
+                    shipping_address:
+                      type: object
+                      properties:
+                        address_1:
+                          type: string
+                          example: 444 Mayflower St
+                        address_2:
+                          type: string
+                          example: Apt 422
+                        address_3:
+                          type: string
+                          example: PO 1
+                        city:
+                          type: string
+                          example: Lake Winnipeg
+                        state:
+                          type: string
+                          example: IL
+                        country:
+                          type: string
+                          example: US
+                        postal_code:
+                          type: string
+                          example: '60660'
+                        name:
+                          type: string
+                          example: Abc Vendors
+                        phone:
+                          type: string
+                          example: '8332212312'
+                    web_portal_url:
+                      type: string
+                      maxLength: 255
+                      example: http://abcvendors.com
+                    payment_option:
+                      type: string
+                      enum:
+                        - prepaid
+                        - collect
+                        - third-party-billing
+                      example: prepaid
+                    open_ra_number:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - static
+                            - generated
+                          example: static
+                        value:
+                          type: string
+                          example: '134'
+                    handling_instructions:
+                      description: 'Deprecated: use notes field instead'
+                      type: string
+                      maxLength: 255
+                      example: Handled with the utmost care.
+                    expected_credit_percent:
+                      type: string
+                      example: '12'
+                    requires_approval:
+                      type: boolean
+                      example: true
+      responses:
+        '201':
+          description: Vendor was successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 12
+        '202':
+          description: Vendor was successfully updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 12
+        '400':
+          description: Bad Request. Check structure of JSON payload.
+        '401':
+          description: >
+            Missing, expired, or invalid OAuth bearer token. Request a new token
+            from the auth service.
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: You are not allowed to do this action
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - errors
+                example:
+                  message: Validation Failed
+                  errors:
+                    - field: eligibility
+                      code: invalid
+                      message: >-
+                        eligibility : invalid : value "unknown" did not match
+                        one of the following values: forced, eligible,
+                        prohibited 
+        '500':
+          description: Internal Server Error.
+        '502':
+          description: Bad Gateway.
+        '503':
+          description: Service Unavailable.
+        '504':
+          description: Gateway Timeout.

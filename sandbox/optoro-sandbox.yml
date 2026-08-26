@@ -1,0 +1,68 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  servers[] blocks across openapi/*.yml (every production host has a matching sandbox host declared
+  in-spec) and https://developer.optoro.com/content/api_overview
+docs: https://developer.optoro.com/content/api_overview
+separation:
+  model: separate-hosts
+  detail: >-
+    Optoro separates test from live by HOST, not by key prefix or an account mode flag. Every API that
+    declares servers[] declares a production URL and a `*.sandbox.optiturn.com` counterpart in the same
+    spec, described literally as "Sandbox". Two APIs additionally publish a `*.stage.optiturn.com` host.
+    There is no documented test-key prefix and no test/live indicator in the token response.
+  key_prefixes: none documented
+  mode_flag: none
+environments:
+- name: production
+  hosts:
+  - https://auth.optiturn.com
+  - https://catalogs.optiturn.com
+  - https://facilities.optiturn.com
+  - https://drop-ship.optiturn.com
+  - https://rtv.optiturn.com
+  - https://asn.optiturn.com
+  - https://orders.optiturn.com
+  - https://optiturn.com
+  rate_limit: 5000 requests per minute per IP
+- name: sandbox
+  hosts:
+  - https://auth.sandbox.optiturn.com
+  - https://catalogs.sandbox.optiturn.com
+  - https://facilities.sandbox.optiturn.com
+  - https://drop-ship.sandbox.optiturn.com
+  - https://rtv.sandbox.optiturn.com
+  - https://asn.sandbox.optiturn.com
+  - https://orders.sandbox.optiturn.com
+  - https://sandbox.optiturn.com
+  rate_limit: 2500 requests per minute per IP
+- name: stage
+  hosts:
+  - https://asn.stage.optiturn.com
+  - https://orders.stage.optiturn.com
+  note: Declared in the Inbound ASN and Forward Orders specs only; not described in the prose docs.
+credentials:
+  self_serve: false
+  issuance: >-
+    "Optoro's Client Success team will provide the credentials used when requesting an access token."
+    There is no developer signup, no key-generation console and no public sandbox registration form —
+    a sandbox client_id/client_secret is obtained through the Optoro account team.
+  token_endpoint_sandbox: https://auth.sandbox.optiturn.com/oauth/token
+test_values:
+  published: false
+  note: >-
+    Optoro publishes NO magic test identifiers, test cards, seeded fixtures, test clocks or trigger tooling.
+    The specs carry illustrative example values only (X-Optiturn-Id "Modrno", order identifier "3573390128",
+    UPC "012345678905") which are documentation examples, not reserved sandbox values. Nothing here should be
+    treated as a working test credential.
+fixtures_and_triggers:
+  test_clock: false
+  event_triggers: false
+  note: >-
+    Webhook delivery cannot be self-triggered. The webhooks page states that Optoro's Client Success team
+    configures each webhook (URL, auth, which events are enabled) and that replaying messages outside the
+    32-hour retry window requires contacting Client Success.
+gaps:
+- No self-serve sandbox signup — an agent or a developer cannot obtain credentials without a sales/CS conversation
+- No published test data set, so sandbox behaviour cannot be rehearsed from the docs alone
+- No event-trigger or replay tooling for the webhook surface

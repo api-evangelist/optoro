@@ -1,0 +1,39 @@
+generated: '2026-08-26'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: www.optoro.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct 16 19:24:36 2026 GMT
+  hsts: false
+- host: developer.optoro.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Nov 24 07:20:34 2026 GMT
+  hsts: false
+- host: auth.optiturn.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct 21 04:17:37 2026 GMT
+  hsts: false
+domains:
+- domain: optoro.com
+  dnssec: false
+  caa:
+  - 0 issue "pki.goog"
+  - 0 issue "sectigo.com"
+  - 0 issue "letsencrypt.org"
+  spf: true
+  dmarc: true
+  dmarc_policy: quarantine
+- domain: optiturn.com
+  dnssec: false
+  caa:
+  - 0 issue "digicert.com"
+  - 0 issue "letsencrypt.org"
+  - 0 issue "pki.goog"
+  - 0 issue "sectigo.com"
+  spf: false
+  dmarc: true
+  dmarc_policy: quarantine

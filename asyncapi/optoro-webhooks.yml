@@ -1,0 +1,152 @@
+generated: '2026-08-26'
+method: searched
+source: https://developer.optoro.com/content/webhooks
+docs:
+- https://developer.optoro.com/content/webhooks
+- https://developer.optoro.com/content/rx_integration_guide
+asyncapi_published: false
+asyncapi_note: >-
+  Optoro publishes NO AsyncAPI document. It documents its event surface as OpenAPI POST operations against an
+  endpoint the CUSTOMER hosts — nine of the seventeen published definitions describe Optoro-to-customer
+  messages rather than customer-to-Optoro calls, with servers[] pointing at developer.optoro.com as a
+  documentation placeholder because the real target URL is supplied by the integrator. No AsyncAPI file was
+  fabricated here; this artifact is the webhook catalog Optoro actually publishes.
+delivery:
+  guarantee: at-least-once
+  ordering: not guaranteed — delivery is parallelized; most messages carry a timestamp for reordering
+  duplicates: expected — "your webhook must be able to handle them"
+  latency: asynchronous, not real time
+  transport: HTTPS POST, TLS 1.2 minimum, certificate must be signed by a globally trusted CA with intermediates installed
+  content_type: application/json
+  method: POST
+  success_criteria: any 2xx (200 OK recommended)
+  retry:
+    window: up to 32 hours
+    strategy: exponential backoff
+    retriable_status_codes: [500, 502, 503, 504]
+    also_retried: connection timeouts
+    reauth_on: 401 — Optoro re-authenticates and retries
+    do_not_return: 400 / 422 — "quietly ignore the message and respond with a 200 OK"
+  retention: 30 days; replay outside the 32-hour window requires Optoro Client Success
+  configuration: >-
+    Webhooks are configured by Optoro's Client Success team, not self-serve. Required from the integrator:
+    the list of webhooks to enable, a URL for each, and authentication details.
+  authentication_supported:
+  - Basic Auth
+  - OAuth 2
+  - AWS SigV4
+  - API key in an HTTP header
+  credential_handling: secrets sent to Client Success as encrypted files and stored encrypted
+surface_kinds:
+- kind: webhook
+  definition: Called when an event occurs in Optoro's system ("telling"). Response only acknowledges receipt; Optoro does not act on the body.
+- kind: customer-endpoint
+  definition: Called when Optoro needs information ("asking"). The response body influences Optoro's behaviour.
+webhooks:
+- name: RMAs
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: rmas
+  spec: openapi/optoro-rmas-openapi.yml
+  version: 5.0.0
+  version_header: 'X-Optiturn-Api-Version: 3'
+  url: https://developer.optoro.com/openapi/rmas/openapi
+  events:
+  - shopper initiates a return
+  - carrier tracking details provided
+  - carrier receives and scans the return
+  - shopper drops off the return, or a pick-up partner collects it
+  - item received and ready for refund (Returns Management customers)
+  - retailer posts refund details in the Refunds object of the Returns Portal Orders API
+- name: Disposition Update
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: dispositions
+  spec: openapi/optoro-disposition-update-openapi.yml
+  url: https://developer.optoro.com/openapi/disposition_update/openapi
+  events:
+  - a unit's disposition or condition changes in the warehouse or store
+- name: Final Disposition
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: final_dispositions
+  spec: openapi/optoro-final-disposition-openapi.yml
+  url: https://developer.optoro.com/openapi/final_disposition/openapi
+  events:
+  - a unit reaches its terminal disposition
+- name: Outbound ASN
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: outbound_asns
+  spec: openapi/optoro-outbound-asn-openapi.yml
+  url: https://developer.optoro.com/openapi/outbound_asn/openapi
+  events:
+  - outbound shipment (including stock transfers) leaves an Optoro facility
+- name: Drop Shipment Confirmation
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: drop_shipment_confirmation
+  spec: openapi/optoro-drop-ship-webhooks-openapi.yml
+  url: https://developer.optoro.com/openapi/drop_ship/webhooks/openapi
+  events:
+  - a drop shipment is confirmed
+- name: Drop Shipment Cancellation
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: drop_shipment_cancellation
+  spec: openapi/optoro-drop-ship-webhooks-openapi.yml
+  url: https://developer.optoro.com/openapi/drop_ship/webhooks/openapi
+  events:
+  - a drop shipment is cancelled in full
+- name: Drop Shipment Partial Cancellation
+  kind: webhook
+  direction: optoro-to-customer
+  method: POST
+  operation_id: drop_shipment_partial_cancellation
+  spec: openapi/optoro-drop-ship-webhooks-openapi.yml
+  url: https://developer.optoro.com/openapi/drop_ship/webhooks/openapi
+  events:
+  - part of a drop shipment is cancelled
+customer_endpoints:
+- name: Exchange Orders
+  kind: customer-endpoint
+  direction: optoro-to-customer
+  method: POST
+  operation_id: exchange_orders
+  spec: openapi/optoro-exchange-orders-openapi.yml
+  version_header: 'X-Optiturn-Api-Version: 1 | 2'
+  url: https://developer.optoro.com/openapi/exchange_orders/openapi
+  idempotency_key: original_order_id
+  contract: >-
+    "Your endpoint should handle all tax and shipping calculations. The endpoint should be idempotent, using
+    original_order_id as the key. Only one exchange order can be placed against an original_order_id."
+  events:
+  - shopper confirms an exchange
+  - shopper selects a gift-card refund
+  - instant exchange / instant gift card
+- name: Exchange Variants
+  kind: customer-endpoint
+  direction: optoro-to-customer
+  method: GET
+  operation_id: variants
+  spec: openapi/optoro-variants-openapi.yml
+  version_header: 'X-Optiturn-Api-Version: 1'
+  url: https://developer.optoro.com/openapi/variants/openapi
+  contract: Optoro GETs /sku/{parent_sku}/variants from the retailer to offer even-exchange options to the shopper.
+- name: Forward Orders
+  kind: customer-endpoint
+  direction: optoro-to-customer
+  method: POST
+  spec: openapi/optoro-forward-orders-openapi.yml
+  url: https://developer.optoro.com/openapi/forward_orders/openapi
+  deprecated: true
+counts:
+  webhooks: 7
+  customer_endpoints: 3
+  total_event_operations: 10

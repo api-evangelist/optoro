@@ -1,0 +1,26 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/optoro-catalogs-openapi.yml, openapi/optoro-drop-ship-openapi.yml, openapi/optoro-facilities-openapi.yml,
+  openapi/optoro-rtv-openapi.yml
+schemes:
+- name: oAuth2
+  source: openapi/optoro-catalogs-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+- name: oAuth2
+  source: openapi/optoro-drop-ship-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+- name: oAuth2
+  source: openapi/optoro-facilities-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+- name: oAuth2
+  source: openapi/optoro-rtv-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+scopes: []

@@ -1,0 +1,189 @@
+generated: '2026-08-26'
+method: searched
+source: https://developer.optoro.com/content/api_overview
+docs:
+- https://developer.optoro.com/content/api_overview
+- https://developer.optoro.com/content/webhooks
+derived_from:
+- openapi/optoro-drop-ship-openapi.yml
+- openapi/optoro-catalogs-openapi.yml
+- openapi/optoro-rmas-openapi.yml
+- openapi/optoro-exchange-orders-openapi.yml
+authentication:
+  style: oauth2-client-credentials
+  token_endpoint: https://auth.optiturn.com/oauth/token
+  header: 'Authorization: bearer {access_token}'
+  token_lifetime_seconds: 90000
+  token_lifetime_human: 25 hours
+  scope_string: read write
+  reuse: >-
+    "Access tokens are valid for 25 hours and should be reused. There is no need to request a new token until
+    the previous token expires. The same token may be used across all of Optoro's APIs."
+  credential_issuance: manual — issued by Optoro Client Success, no self-serve key generation
+content_negotiation:
+  request_content_type: application/json
+  accept: application/json
+  encoding: UTF-8
+  transport: HTTPS with TLS 1.2 only
+  certificate_authorities:
+  - Google Trust Services (pki.goog)
+  - Let's Encrypt
+versioning:
+  styles:
+  - style: header
+    header: X-Optiturn-Api-Version
+    note: >-
+      Per-API integer or date version pinned as a required header on the callback/webhook APIs
+      (RMAs enum [3] in v5 spec, Exchange Orders enum ['1','2'], Exchange Variants enum [1]) and as a
+      shared parameter on Drop Ship. The header name and value vary by API — the API Overview says
+      "check the relevant API specification".
+  - style: date
+    note: Catalogs (2023-08-01, previously 2018-05-10), Facilities (2024-08-08), External Bin Changes (2023-05-01, previously 2022-10-12)
+  - style: semver-major
+    note: RMAs v3/v4/v5, Drop Ship v6.0, Exchange Orders v1/v2 — older majors stay published on the portal alongside the current one
+  current_versions:
+    rmas: '5.0.0'
+    drop_ship: '6.0'
+    catalogs: '2023-08-01'
+    facilities: '2024-08-08'
+    external_bin_changes: '2023-05-01 r1'
+    exchange_orders: '2.0.0'
+    returns_portal_orders: '3.0.0'
+tenancy:
+  header: X-Optiturn-Id
+  required: true
+  description: >-
+    Tenant/retailer identifier sent on Optoro-to-customer callbacks (RMAs, Exchange Orders, Exchange Variants)
+    so a multi-brand consumer can route the message. Example value in the specs is "Modrno".
+pagination:
+  style: page-number
+  params:
+  - name: page
+    in: query
+  - name: per_page
+    in: query
+  applies_to:
+  - openapi/optoro-drop-ship-openapi.yml#listingsIndex
+  - openapi/optoro-drop-ship-openapi.yml#OrdersIndex
+  - openapi/optoro-drop-ship-openapi.yml#shipmentsIndex
+  response_fields: not documented — no envelope-level total/next-page fields are declared in the spec
+  note: Only the Drop Ship API exposes collection endpoints; every other Optoro API is single-resource POST/PUT.
+error_envelope:
+  shape: custom-json
+  format: not rfc9457
+  fields:
+  - name: message
+    description: Human-readable summary, e.g. "Validation Failed" or "Order status should be pending_payment"
+  - name: errors
+    description: Array of field-level errors, each with `field` and `code` (e.g. code "missing_field")
+  example: |
+    {
+      "message": "Validation Failed",
+      "errors": [
+        { "field": "rma_identifier", "code": "missing_field" }
+      ]
+    }
+  see: errors/optoro-problem-types.yml
+rate_limit_signaling:
+  status_code: 429
+  headers: none documented
+  see: rate-limits/optoro-rate-limits.yml
+request_tracing:
+  request_id_header: none documented
+  note: >-
+    No correlation/request-id header is documented for inbound APIs. X-Optiturn-Id is a tenant identifier,
+    not a per-request trace id.
+idempotency:
+  inbound_key_header: null
+  supported: partial
+  grade: undocumented-for-inbound
+  detail: >-
+    Optoro documents NO idempotency key header for its inbound APIs, and none of the 17 OpenAPI definitions
+    declares an Idempotency-Key parameter. Several inbound endpoints are naturally idempotent because they
+    are upserts on a caller-supplied natural key — Catalogs `catalog_entry_updates` (create/update),
+    Facilities `upsertFacility`, RTV `vendorUpdate` ("Create or update a vendor"), and ASN
+    `PUT /asns/{asn-number}` — but Optoro never states a replay guarantee for them, so a retrying agent has
+    no contractual safety net. The one place Optoro DOES specify idempotency is in the opposite direction:
+    the Exchange Orders callback the retailer implements "should be idempotent, using `original_order_id` as
+    the key. Only one exchange order can be placed against an `original_order_id`." Webhook delivery is
+    explicitly at-least-once, so every consumer endpoint must de-duplicate.
+  consumer_requirements:
+  - surface: Exchange Orders callback
+    key: original_order_id
+    source: openapi/optoro-exchange-orders-openapi.yml
+  - surface: all webhooks
+    key: caller-defined
+    source: https://developer.optoro.com/content/webhooks
+    note: at-least-once delivery, out-of-order delivery, duplicates must be tolerated
+  no_pointer_reason: >-
+    No `Idempotency` common[] pointer is emitted. Optoro provides no idempotency key on the APIs an agent
+    would call; asserting one would credit Optoro with a retry-safety contract it does not publish.
+dry_run_mode:
+  supported: false
+  note: No preview/simulate/validate-only mode is documented on any endpoint. The published sandbox estate
+    (*.sandbox.optiturn.com) is the rehearsal mechanism instead — see sandbox/optoro-sandbox.yml.
+reversibility:
+  grade: verified
+  applies: true
+  note: >-
+    Optoro's API surface is write-heavy (25 of 32 operations are POST/PUT/DELETE), so reversibility is in
+    scope. One true reversal operation is published with an explicit state window; the remaining write
+    surfaces are upserts that are reversed by sending a corrected payload rather than by a dedicated undo.
+  operations:
+  - surface: Drop Ship order
+    write_operation: ordersCreate
+    reversal_operation: ordersCancel
+    method: DELETE /orders/{id}
+    spec: openapi/optoro-drop-ship-openapi.yml
+    window: >-
+      Only while the order is in `pending_payment` status. The operation description states it "Cancels the
+      lot order that matches the identifier that is included in the url path from pending_payment status",
+      and the 422 response example is "Order status should be pending_payment" — i.e. cancellation is
+      refused once the order has moved past pending payment.
+    window_stated: true
+    docs: https://developer.optoro.com/openapi/drop_ship/openapi/orders/orderscancel
+  - surface: Drop shipment (post-order)
+    write_operation: ordersCreate
+    reversal_operation: drop_shipment_cancellation / drop_shipment_partial_cancellation
+    method: POST (Optoro -> customer callback)
+    spec: openapi/optoro-drop-ship-webhooks-openapi.yml
+    window: >-
+      Not an agent-callable reversal — these are notifications Optoro sends the customer when a drop shipment
+      is cancelled or partially cancelled. No customer-initiated window is stated.
+    window_stated: false
+  - surface: Catalog entry / Facility / RTV vendor / ASN
+    write_operation: catalogEntryUpdate, upsertFacility, vendorUpdate, PUT /asns/{asn-number}
+    reversal_operation: null
+    method: null
+    window: null
+    window_stated: false
+    note: >-
+      No delete or undo exists. These are last-writer-wins upserts; the Catalogs docs warn explicitly that
+      "Null or empty values will be saved and can overwrite previously submitted data. If this is not
+      desired then omit the field from the update request." An agent cannot roll a catalog write back — it
+      can only send a corrected payload, and only if it retained the prior state itself.
+  - surface: Returns Portal Orders / RMAs / dispositions
+    write_operation: returns_portal_orders
+    reversal_operation: null
+    window: null
+    window_stated: false
+    note: Event-stream style posts of an order snapshot; corrected by posting a newer full snapshot.
+retries:
+  client_guidance: >-
+    "We recommend retrying three times with an exponential backoff between each request" on 5xx
+    (500 / 502 / 503) and on 429.
+  webhook_delivery:
+    guarantee: at-least-once
+    ordering: not guaranteed (delivery is parallelized; most messages carry a timestamp)
+    retry_window: up to 32 hours with exponential backoff
+    retriable_status_codes: [500, 502, 503, 504, timeout]
+    auto_reauth_status: 401 (Optoro re-authenticates and retries once)
+    message_retention: 30 days
+    source: https://developer.optoro.com/content/webhooks
+cross_links:
+  errors: errors/optoro-problem-types.yml
+  lifecycle: lifecycle/optoro-lifecycle.yml
+  authentication: authentication/optoro-authentication.yml
+  rate_limits: rate-limits/optoro-rate-limits.yml
+  sandbox: sandbox/optoro-sandbox.yml
+  webhooks: asyncapi/optoro-webhooks.yml

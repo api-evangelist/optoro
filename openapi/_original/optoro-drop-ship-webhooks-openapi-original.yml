@@ -1,0 +1,655 @@
+openapi: 3.0.3
+info:
+  title: Drop Ship
+  version: 1.0.0
+  contact:
+    name: Fulfillment
+  description: >
+    ## Introduction
+
+    The Drop Ship is used to communicate to the client once an order has been
+    shipped or cancelled from OptiTurn, to close an order within the client's
+    OMS.
+
+    ### Post Confirmation:
+
+    The Drop Shipment Confirmation API is used to post a shipment confirmation
+    for the orders shipped so that the client can close the order on their end.
+    Optoro can POST a shipment confirmation to the client endpoint.
+
+    ### Post Cancellation:
+
+    The Drop Shipment Cancellation API is used to post a cancelled order to a
+    client endpoint. An order could be rejected or cancelled in the warehouse,
+    due to the inventory not being found or it being damaged.
+
+    ### Post Partial Cancellation:
+
+    The Drop Shipment Partial Cancellation API is used to post a partially
+    cancelled order to a client endpoint. An order item could be cancelled in
+    the warehouse, due to the inventory is not being found or damaged.
+
+    ## Failure Handling
+
+    <p>When Optoro receives a 401 HTTP status, Optoro will request a new
+    Authentication Token from the client's services and retry the request.</p>
+    <p>When Optoro receives any other error (as described above and identified
+    by a 4xx (not 401) or 5xx range http status code) Optoro will retry five
+    times with the same message.  The retries will happen at an exponential
+    backoff cadence in order not to overload machines.  If the failure persists,
+    the message will be stored in a failure queue and Optoro will have a
+    technical contact person reach out to client tech support to report a
+    problem.  When the problem has been resolved, Optoro can manually retry
+    failed requests.</p> <p>For Drop Shipment acknowledgement, all errors are
+    handled the same since this is not in a user facing flow.  However, the
+    differentiation of status codes will help Optoro when reporting an
+    issue.</p>
+servers:
+  - url: https://developer.optoro.com
+paths:
+  /drop_shipment_confirmation:
+    post:
+      summary: POST a Drop Shipment Confirmation
+      operationId: drop_shipment_confirmation
+      description: >
+        Client endpoint to which Drop Shipment Confirmation data is posted to.
+
+        <br>This endpoint along with any authentication mechanisms needed must
+        be communicated to client's account manager.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropShipmentConfirmation'
+      responses:
+        '200':
+          description: >-
+            Success. Optoro recommends client APIs respond with a
+            JSON-structured object. This is used for debugging purposes only so
+            this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+  /drop_shipment_cancellation:
+    post:
+      summary: POST a Drop Shipment Cancellation
+      operationId: drop_shipment_cancellation
+      description: >
+        Client endpoint to which Drop Shipment Cancellation data is posted to.
+
+        <br>This endpoint along with any authentication mechanisms needed must
+        be communicated to client's account manager.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropShipmentCancellation'
+      responses:
+        '200':
+          description: >-
+            Success. Optoro recommends client APIs respond with a
+            JSON-structured object. This is used for debugging purposes only so
+            this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+  /drop_shipment_partial_cancellation:
+    post:
+      summary: POST a Drop Shipment Partial Cancellation
+      operationId: drop_shipment_partial_cancellation
+      description: >
+        Client endpoint to which Drop Shipment Partial Cancellation data is
+        posted to.
+
+        <br>This endpoint along with any authentication mechanisms needed must
+        be communicated to client's account manager.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropShipmentPushPartialCancellation'
+      responses:
+        '200':
+          description: >-
+            Success. Optoro recommends client APIs respond with a
+            JSON-structured object. This is used for debugging purposes only so
+            this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+components:
+  schemas:
+    DropShipmentConfirmation:
+      type: object
+      description: Drop Shipment Confirmation Data
+      properties:
+        shipment:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: An object's database primary key. Do not rely on this value!
+              example: 1
+            client_identifier:
+              type: string
+              description: >-
+                client_identifier associated with the shipment which is also
+                associated with the order
+              example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+            channel:
+              type: string
+              description: Inventory channel name
+              example: rts_drop_ship
+            carrier:
+              type: string
+              description: Carrier used in shipping.
+              example: UPS
+            shipping_method:
+              type: string
+              description: Name of the shipping method used for the shipment
+              example: UPS Ground
+            tracking_number:
+              type: string
+              description: Shipment tracking number
+              example: 1Z2E07A20302245707
+            billed_weight:
+              type: number
+              description: Weight of the shipment in pounds
+              example: 10
+            shipping_cost_cents:
+              type: integer
+              description: Actual shipping cost paid to ship the package
+              example: 1000
+            packing_slip_identifier:
+              type: string
+              description: >-
+                Identifier to be printed on the packing slip barcode. If null,
+                client_identifier will be the default barcode.
+              example: '1497064'
+            shipment_items:
+              type: array
+              description: Items included in this shipment
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: >-
+                      An object's database primary key. Do not rely on this
+                      value!
+                    minimum: 1
+                  client_identifier:
+                    type: string
+                    description: >-
+                      Client_identifier associated with the shipment item which
+                      is also associated with the order item
+                    example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                  quantity:
+                    type: integer
+                    description: Shipped item quantity
+                    minimum: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Date in ISO 8601 format in UTC
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: Date in ISO 8601 format in UTC
+              additionalProperties: false
+              required:
+                - client_identifier
+                - quantity
+            created_at:
+              type: string
+              format: date-time
+              description: Date in ISO 8601 format in UTC
+            updated_at:
+              type: string
+              format: date-time
+              description: Date in ISO 8601 format in UTC
+          additionalProperties: false
+          required:
+            - client_identifier
+            - channel
+            - carrier
+            - shipping_method
+            - tracking_number
+            - billed_weight
+            - shipping_cost_cents
+            - shipment_items
+    DropShipmentCancellation:
+      type: object
+      description: Drop Shipment Cancellation Data
+      properties:
+        order:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: An object's database primary key. Do not rely on this value!
+              example: 1
+            client_identifier:
+              type: string
+              description: >-
+                client_identifier associated with the shipment which is also
+                associated with the order
+              example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+            billing_address:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: An object's database primary key. Do not rely on this value!
+                  example: 1
+                name:
+                  type: string
+                  description: Name for the address.
+                  example: Lacy Macejkovic
+                company:
+                  type: string
+                  description: Company name for the address.
+                  example: Bayer-Abernathy
+                telephone_number:
+                  type: string
+                  description: Telephone number linked to the address.
+                  example: (914) 000-8971
+                street:
+                  type: string
+                  description: Street line 1 of the address.
+                  example: 315 5th Ave
+                street2:
+                  type: string
+                  description: Street line 2 of the address.
+                  example: Suite 2112
+                city:
+                  type: string
+                  description: City of the address.
+                  example: Scarsdale
+                state:
+                  type: string
+                  description: State of the address.
+                  example: NY
+                zip_code:
+                  type: string
+                  description: Zip code of the address.
+                  example: '10583'
+                country:
+                  type: string
+                  description: Country of the address.
+                  example: US
+                created_at:
+                  type: string
+                  format: date-time
+                  description: Creation timestamp iso8601 UTC
+                updated_at:
+                  type: string
+                  format: date-time
+                  description: Timestamp of most recent update iso8601 UTC
+              additionalProperties: false
+            shipping_address:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: An object's database primary key. Do not rely on this value!
+                  example: 1
+                name:
+                  type: string
+                  description: Name for the address.
+                  example: James Carter
+                company:
+                  type: string
+                  description: Company name for the address.
+                  example: Carter Industries
+                telephone_number:
+                  type: string
+                  description: Telephone number linked to the address.
+                  example: (206) 555-1208
+                street:
+                  type: string
+                  description: Street line 1 of the address.
+                  example: 121 Vine Street
+                street2:
+                  type: string
+                  description: Street line 2 of the address.
+                  example: Suite 1200
+                city:
+                  type: string
+                  description: City of the address.
+                  example: Seattle
+                state:
+                  type: string
+                  description: State of the address.
+                  example: WA
+                zip_code:
+                  type: string
+                  description: Zip code of the address.
+                  example: '98121'
+                country:
+                  type: string
+                  description: Country of the address.
+                  example: US
+                created_at:
+                  type: string
+                  format: date-time
+                  description: Creation timestamp iso8601 UTC
+                updated_at:
+                  type: string
+                  format: date-time
+                  description: Timestamp of most recent update iso8601 UTC
+              additionalProperties: false
+            brand:
+              type: string
+              description: Brand name of client that received the order.
+              example: acme
+            shipping_method:
+              type: string
+              description: |
+                The shipping method to be used on the order.
+              enum:
+                - STANDARD
+                - EXPRESS
+                - OVERNIGHT
+                - FREIGHT
+                - PICK-UP
+            status:
+              type: string
+              description: Status of the order.
+              example: cancelled
+            price_cents:
+              type: integer
+              description: Price paid in cents for the order.
+              example: 10000
+            tax_cents:
+              type: integer
+              description: Tax paid in cents for the order.
+              example: 1000
+            processing_fee_cents:
+              type: integer
+              description: Processing fee paid in cents for the order.
+              example: 0
+            shipping_cost_cents:
+              type: integer
+              description: Shipping cost paid in cents for the order.
+              example: 500
+            shipping_tax_cents:
+              type: integer
+              description: Shipping tax paid in cents for the order.
+              example: 0
+            comments:
+              type: string
+              description: Comments regarding the order.
+              example: Sample order instructions
+            expected_delivery_date:
+              type: string
+              format: date
+              description: Expected delivery date of the order.
+            signature_required:
+              type: boolean
+              description: Specifies if a customer signature is required on delivery
+            packing_slip_identifier:
+              type: string
+              description: Packing slip identifier for the order.
+              example: '1497064'
+            reject_reason:
+              type: string
+              description: Reason the order was rejected.
+              example: ''
+            order_items:
+              type: array
+              description: Order Item attributes
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: >-
+                      An object's database primary key. Do not rely on this
+                      value!
+                    example: 1
+                  client_identifier:
+                    type: string
+                    description: >-
+                      The order item identifier for the order item, typically
+                      coming from the customer's ecommerce platform or OMS
+                    example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                  sku:
+                    type: string
+                    description: >-
+                      Item SKU or listing identifier. This will always be
+                      listing.identifier
+                    example: PTBQ121308
+                  brand:
+                    type: string
+                    description: The brand name of the order item
+                    example: test_brand
+                  condition:
+                    type: string
+                    description: The condition code for the order item
+                    example: 'N'
+                  quantity:
+                    type: integer
+                    description: The quantity of the order item
+                    example: 1
+                  price_cents:
+                    type: integer
+                    description: >-
+                      The price in cents for the total quantity of the order
+                      item
+                    example: 10000
+                  tax_cents:
+                    type: integer
+                    description: The tax in cents for the total quantity of the order item
+                    example: 1000
+                  shipping_cost_cents:
+                    type: integer
+                    description: The shipping cost paid in cents for the order item
+                    example: 500
+                  shipping_tax_cents:
+                    type: integer
+                    description: The shipping tax paid in cents for the order item
+                    example: 0
+                  status:
+                    type: string
+                    description: Status of the order item
+                    example: cancelled
+                  comments:
+                    type: string
+                    description: Comments associated with the order item
+                    example: ''
+                additionalProperties: false
+                required:
+                  - client_identifier
+                  - sku
+                  - brand
+                  - condition
+                  - quantity
+                  - price_cents
+                  - tax_cents
+                  - shipping_cost_cents
+                  - shipping_tax_cents
+                  - status
+            created_at:
+              type: string
+              format: date-time
+              description: Date in ISO 8601 format in UTC
+            updated_at:
+              type: string
+              format: date-time
+              description: Date in ISO 8601 format in UTC
+          additionalProperties: false
+          required:
+            - client_identifier
+            - billing_address
+            - shipping_address
+            - brand
+            - shipping_method
+            - status
+            - price_cents
+            - tax_cents
+            - shipping_cost_cents
+            - shipping_tax_cents
+            - order_items
+    DropShipmentPushPartialCancellation:
+      type: object
+      description: Drop Shipment Partial Cancellation Data
+      properties:
+        order:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: An object's database primary key. Do not rely on this value!
+              example: 1
+            client_identifier:
+              type: string
+              description: >-
+                client_identifier associated with the shipment which is also
+                associated with the order
+              example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+            status:
+              type: string
+              description: Status of the order.
+              example: shipped
+            order_items:
+              type: array
+              description: Order Item attributes
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: >-
+                      An object's database primary key. Do not rely on this
+                      value!
+                    example: 1
+                  client_identifier:
+                    type: string
+                    description: >-
+                      The order item identifier for the order item, typically
+                      coming from the customer's ecommerce platform or OMS
+                    example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                  status:
+                    type: string
+                    description: Status of the order item
+                    example: cancelled
+                  quantity:
+                    type: integer
+                    description: The quantity of the order item
+                    example: 3
+                  cancelled_quantity:
+                    type: integer
+                    description: The quantity of the order item
+                    example: 1
+                additionalProperties: false
+                required:
+                  - client_identifier
+                  - status
+                  - quantity
+                  - cancelled_quantity
+      additionalProperties: false
+      required:
+        - client_identifier
+        - status
+        - order_items
+    ValidationFailure:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+              - field
+              - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                  - missing_field
+                  - invalid_type
+                  - invalid
+  responses:
+    BadRequest:
+      description: Bad Request
+    Unauthorized:
+      description: >-
+        Not Authorized. A new authentication token will be requested from the
+        client's services and the request will be retried.
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable

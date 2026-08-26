@@ -1,0 +1,34 @@
+# Optoro API Developer Guide
+
+> Integrate with Optoro's all-in-one returns platform
+
+## Table of contents
+
+ - [Inbound Advance Shipping Notice API](https://developer.optoro.com/openapi/asn/openapi.md)
+ - [Auth](https://developer.optoro.com/openapi/auth/openapi.md)
+ - [Disposition Update](https://developer.optoro.com/openapi/disposition_update/openapi.md)
+ - [Final Disposition](https://developer.optoro.com/openapi/final_disposition/openapi.md)
+ - [Forward Orders (DEPRECATED)](https://developer.optoro.com/openapi/forward_orders/openapi.md)
+ - [Returns Processing Integration Guide](https://developer.optoro.com/content/rm_integration_guide.md)
+ - [Webhooks](https://developer.optoro.com/content/webhooks.md)
+ - [API Overview](https://developer.optoro.com/content/api_overview.md)
+ - [Returns Experience Integration Guide](https://developer.optoro.com/content/rx_integration_guide.md)
+ - [Real Time Inventory Receipt API](https://developer.optoro.com/openapi/inventory_receipt/openapi.md)
+ - [Outbound ASN](https://developer.optoro.com/openapi/outbound_asn/openapi.md)
+ - [Returns Portal Orders](https://developer.optoro.com/openapi/returns_portal_orders/openapi.md)
+ - [RTV Vendor API](https://developer.optoro.com/openapi/rtv/openapi.md)
+ - [Exchange Variants](https://developer.optoro.com/openapi/variants/openapi.md)
+ - [Catalogs](https://developer.optoro.com/openapi/catalogs/2018-05-10/openapi.md)
+ - [Catalogs](https://developer.optoro.com/openapi/catalogs/openapi.md)
+ - [Drop Ship](https://developer.optoro.com/openapi/drop_ship/2023-08-15/openapi.md)
+ - [Drop Ship](https://developer.optoro.com/openapi/drop_ship/openapi.md)
+ - [Drop Ship](https://developer.optoro.com/openapi/drop_ship/webhooks/openapi.md)
+ - [Exchange Orders](https://developer.optoro.com/openapi/exchange_orders/1/openapi.md)
+ - [Exchange Orders](https://developer.optoro.com/openapi/exchange_orders/openapi.md)
+ - [External Bin Changes](https://developer.optoro.com/openapi/external_bin_changes/2022-10-12/openapi.md)
+ - [External Bin Changes](https://developer.optoro.com/openapi/external_bin_changes/openapi.md)
+ - [Facilities](https://developer.optoro.com/openapi/facilities/openapi.md)
+ - [RMAs](https://developer.optoro.com/openapi/rmas/3/openapi.md)
+ - [RMAs](https://developer.optoro.com/openapi/rmas/4/openapi.md)
+ - [RMAs](https://developer.optoro.com/openapi/rmas/openapi.md)
+

@@ -1,0 +1,38 @@
+generated: '2026-08-26'
+method: searched
+source: https://developer.optoro.com/content/api_overview
+docs: https://developer.optoro.com/content/api_overview
+limit_count: 2
+note: >-
+  Optoro publishes a single global rate-limit policy in the API Overview that applies to all inbound APIs.
+  It is stated as a reserved right ("Optoro reserves the right to rate limit in the event that a high volume
+  of traffic threatens our system") rather than a hard contractual quota. No RateLimit-* / X-RateLimit-*
+  response headers and no Retry-After header are documented; the only runtime signal an agent gets is the
+  HTTP 429 status code itself, and the documented remedy is client-side exponential backoff.
+rate_limits:
+- scope: per-ip
+  environment: production
+  window: 1m
+  limit: 5000
+  unit: requests
+  burst: null
+  source: https://developer.optoro.com/content/api_overview
+- scope: per-ip
+  environment: sandbox
+  window: 1m
+  limit: 2500
+  unit: requests
+  burst: null
+  source: https://developer.optoro.com/content/api_overview
+exhaustion:
+  status_code: 429
+  status_name: Too Many Requests
+  retry_after_header: false
+  guidance: >-
+    "Your system should react by retrying the request with an exponential backoff between each attempt."
+response_headers:
+  documented: false
+  headers: []
+  note: >-
+    No rate-limit response headers are documented anywhere in the API Overview or in any of the 17 OpenAPI
+    definitions. An agent cannot read remaining quota or a reset time; it can only observe a 429.

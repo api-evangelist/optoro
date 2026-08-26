@@ -1,0 +1,31 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  npm registry search (optoro, optiturn), PyPI /pypi/optoro/json, RubyGems search API, Packagist search API,
+  github.com/optoro repository listing, and the developer.optoro.com portal (llms.txt table of contents,
+  API Overview, both integration guides)
+package_count: 0
+packages: []
+note: >-
+  Optoro publishes NO first-party client libraries. Searched npm (registry.npmjs.org search for "optoro" and
+  "optiturn" — the only hit is vue-cli-plugin-vueconf-2019-example, a 2019 Vue Conf demo plugin, not an API
+  client), PyPI (/pypi/optoro/json -> 404), RubyGems (empty result set), Packagist (no Optoro packages),
+  and the github.com/optoro organization (24 public repos, all forks of third-party OSS — sinatra, paperclip,
+  apipie-rails, incubator-airflow, marginalia — or hack-day/interview projects; no SDK). The developer portal
+  documents raw HTTP + OAuth 2.0 client credentials only and links no SDKs, so no `SDKs` pointer is emitted.
+searched_registries:
+- registry: npm
+  query: optoro, optiturn
+  result: no first-party client library
+- registry: pypi
+  query: optoro
+  result: 404 not found
+- registry: rubygems
+  query: optoro
+  result: empty
+- registry: packagist
+  query: optoro
+  result: no match
+- registry: github
+  query: github.com/optoro
+  result: 24 public repos, all forks or demos; no SDK

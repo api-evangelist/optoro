@@ -1,23 +1,348 @@
 aid: optoro
 name: Optoro
-description: 'Optoro is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Optoro is a returns management and reverse-logistics software company (Washington, DC; acquired by Blue
+  Yonder in August 2025) whose OptiTurn platform powers the full returns lifecycle for retailers, brands and 3PLs — a
+  shopper-facing returns portal and RMA workflow, in-store and warehouse returns processing, disposition and routing
+  decisions, drop-ship fulfillment of returned and excess inventory, return-to-vendor agreements, and resale across secondary
+  channels. Optoro publishes a public, API-first developer portal at developer.optoro.com covering seventeen OpenAPI
+  3.0/3.1 definitions across two directions: inbound APIs the retailer calls (Catalogs, Facilities, Drop Ship, RTV Vendor,
+  ASN, External Bin Changes, Auth) and outbound webhooks/customer endpoints Optoro calls (RMAs, Disposition Update, Final
+  Disposition, Outbound ASN, Exchange Orders, Exchange Variants, Drop Ship confirmation/cancellation). Authentication
+  is OAuth 2.0 client credentials against auth.optiturn.com with 25-hour bearer tokens, and a full sandbox estate is
+  published on *.sandbox.optiturn.com.'
 url: https://raw.githubusercontent.com/api-evangelist/optoro/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
-specificationVersion: '0.20'
+specificationVersion: '0.23'
 created: '2026-08-26'
 modified: '2026-08-26'
+image: https://www.optoro.com/wp-content/uploads/2024/03/optoro-home-hero-lg.png
 tags:
-- Company
-apis: []
+- Returns Management
+- Reverse Logistics
+- Retail
+- Supply Chain
+- eCommerce
+- Fulfillment
+- Drop Ship
+- Inventory
+- Webhooks
+- Order Management
+tags_raw:
+- returns-management
+- reverse-logistics
+- retail
+- supply-chain
+- ecommerce
+- fulfillment
+- drop-ship
+- inventory
+- webhooks
+- order-management
+apis:
+- name: Optoro Auth API
+  description: OAuth 2.0 client-credentials token endpoint for every Optoro API. Exchanges the client_id and client_secret
+    issued by Optoro's Client Success team for a bearer access token valid 25 hours (90000 seconds) with scope "read
+    write". The same token is accepted across all Optoro APIs.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Authentication
+  - OAuth
+  - Returns Management
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-auth-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Overlay
+    url: overlays/optoro-auth-overlay.yaml
+  tags_raw:
+  - authentication
+  - oauth
+  - returns-management
+- name: Optoro Catalogs API
+  description: Product master data feed. POST /catalog_entry_updates upserts a catalog entry — SKU, title, imagery, GS1
+    UPC/ASIN product identifiers, allowed and disallowed resale channels, and configurable custom fields — which Optoro
+    then uses to disposition, route and price returned units. Version 2023-08-01.
+  humanURL: https://developer.optoro.com/openapi/catalogs/openapi
+  baseURL: https://catalogs.optiturn.com
+  tags:
+  - Returns Management
+  - Retail
+  - Inventory
+  - Product Data
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-catalogs-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: Overlay
+    url: overlays/optoro-catalogs-overlay.yaml
+  tags_raw:
+  - returns-management
+  - retail
+  - inventory
+  - product-data
+- name: Optoro Facilities API
+  description: Create or update the stores and warehouses in a retailer’s returns network so units can be received, dispositioned
+    and moved against a known location. Single upsert operation, version 2024-08-08, OAuth 2.0 client credentials.
+  humanURL: https://developer.optoro.com/openapi/facilities/openapi
+  baseURL: https://facilities.optiturn.com
+  tags:
+  - Returns Management
+  - Supply Chain
+  - Retail
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-facilities-openapi.yml
+  - type: Overlay
+    url: overlays/optoro-facilities-overlay.yaml
+  tags_raw:
+  - returns-management
+  - supply-chain
+  - retail
+- name: Optoro RTV Vendor API
+  description: Return-to-vendor agreements. POST /vendor_updates creates or updates a vendor and the policy terms that
+    govern which returned units are routed back to that vendor rather than resold, refurbished or liquidated. Version
+    2.0.0.
+  humanURL: https://developer.optoro.com/openapi/rtv/openapi
+  baseURL: https://rtv.optiturn.com
+  tags:
+  - Reverse Logistics
+  - Supply Chain
+  - Vendor Management
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-rtv-openapi.yml
+  - type: Overlay
+    url: overlays/optoro-rtv-overlay.yaml
+  tags_raw:
+  - reverse-logistics
+  - supply-chain
+  - vendor-management
+- name: Optoro Inbound ASN API
+  description: Advance shipping notices for returns and stock moving into an Optoro facility. POST /asns creates an ASN
+    carrying carrier, tracking number, ship date, origin and destination plus cartons and their line details (SKU, UPC,
+    ASIN, condition, quantity, return reason, unit identifier); PUT /asns/{asn-number} amends it by natural key.
+  humanURL: https://developer.optoro.com/openapi/asn/openapi
+  baseURL: https://asn.optiturn.com
+  tags:
+  - Reverse Logistics
+  - Supply Chain
+  - Fulfillment
+  - Inventory
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-asn-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-inventory-receipt-openapi.yml
+  - type: Overlay
+    url: overlays/optoro-asn-overlay.yaml
+  tags_raw:
+  - reverse-logistics
+  - supply-chain
+  - fulfillment
+  - inventory
+- name: Optoro External Bin Changes API
+  description: Unified external API for unit and location bin changes inside an Optoro warehouse. The only Optoro surface
+    publishing both a write and a read-back operation (createExternalBinChange / showExternalBinChange), scoped write:external_bin_changes
+    and read:external_bin_changes. Version 2023-05-01 r1.
+  humanURL: https://developer.optoro.com/openapi/external_bin_changes/openapi
+  baseURL: https://optiturn.com
+  tags:
+  - Reverse Logistics
+  - Inventory
+  - Supply Chain
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-external-bin-changes-openapi.yml
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Overlay
+    url: overlays/optoro-external-bin-changes-overlay.yaml
+  tags_raw:
+  - reverse-logistics
+  - inventory
+  - supply-chain
+- name: Optoro Drop Ship API
+  description: Fulfil orders directly from returned and excess units and lots held in the Optoro RMS. Twelve operations
+    across listings (index, show, update quantity), orders (index, show, create, batch create, update, cancel) and shipments
+    (index, show, show-by-order). Cancellation is available only while an order is in pending_payment. Version 6.0, OAuth
+    2.0 client credentials, page/per_page pagination.
+  humanURL: https://developer.optoro.com/openapi/drop_ship/openapi
+  baseURL: https://drop-ship.optiturn.com
+  tags:
+  - Drop Ship
+  - Fulfillment
+  - Order Management
+  - eCommerce
+  - Retail
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-drop-ship-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-drop-ship-webhooks-openapi.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: AgentSkill
+    url: skills/optoro-drop-ship-order.md
+  - type: Overlay
+    url: overlays/optoro-drop-ship-overlay.yaml
+  tags_raw:
+  - drop-ship
+  - fulfillment
+  - order-management
+  - ecommerce
+  - retail
+- name: Optoro Returns Portal Orders API
+  description: Retailers POST a full snapshot of each order — order, items, customer, refunds, discounts — to Optoro
+    at the first shipped event and again on every lifecycle change, which is what the shopper sees when initiating a
+    return in the Optoro returns portal. Version 3.0.0.
+  humanURL: https://developer.optoro.com/openapi/returns_portal_orders/openapi
+  baseURL: https://orders.optiturn.com
+  tags:
+  - Returns Management
+  - eCommerce
+  - Retail
+  - Order Management
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-returns-portal-orders-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: AgentSkill
+    url: skills/optoro-returns-experience.md
+  - type: Overlay
+    url: overlays/optoro-returns-portal-orders-overlay.yaml
+  tags_raw:
+  - returns-management
+  - ecommerce
+  - retail
+  - order-management
+- name: Optoro Event Webhooks and Customer Endpoints
+  description: 'Ten Optoro-to-customer message contracts published as OpenAPI: the RMAs webhook (return initiated, tracking
+    issued, carrier scan, drop-off, warehouse receipt, refund posted), Disposition Update, Final Disposition, Outbound
+    ASN, and Drop Shipment confirmation / cancellation / partial cancellation; plus three ''customer endpoints'' whose
+    response Optoro acts on — Exchange Orders (idempotent on original_order_id), Exchange Variants, and the deprecated
+    Forward Orders. Delivery is at-least-once and unordered, retried with exponential backoff for up to 32 hours, retained
+    30 days. servers[] names developer.optoro.com as a documentation placeholder because the real target URL is the integrator''s
+    own host.'
+  humanURL: https://developer.optoro.com/content/webhooks
+  baseURL: https://developer.optoro.com
+  tags:
+  - Webhooks
+  - Returns Management
+  - Reverse Logistics
+  - eCommerce
+  - Fulfillment
+  properties:
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: OpenAPI
+    url: openapi/optoro-rmas-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-disposition-update-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-final-disposition-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-outbound-asn-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-exchange-orders-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-variants-openapi.yml
+  - type: OpenAPI
+    url: openapi/optoro-forward-orders-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+  - type: Overlay
+    url: overlays/optoro-rmas-overlay.yaml
+  tags_raw:
+  - webhooks
+  - returns-management
+  - reverse-logistics
+  - ecommerce
+  - fulfillment
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: AgenticAccess
+  url: agentic-access/optoro-agentic-access.yml
+- type: VulnerabilityDisclosure
+  url: security/optoro-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/optoro-domain-security.yml
 - type: Website
-  url: https://forgeglobal.com/optoro_stock/
+  url: https://www.optoro.com/
+- type: DeveloperPortal
+  url: https://developer.optoro.com/
+- type: Documentation
+  url: https://developer.optoro.com/content/api_overview
+- type: APIReference
+  url: https://developer.optoro.com/openapi/rmas/openapi
+- type: GettingStarted
+  url: https://developer.optoro.com/content/rx_integration_guide
+- type: Blog
+  url: https://www.optoro.com/returns-blog/
+- type: Support
+  url: https://help.optoro.com/hc/en-us
+- type: TermsOfService
+  url: https://www.optoro.com/terms-conditions/
+- type: PrivacyPolicy
+  url: https://www.optoro.com/privacy-policy/
+- type: Login
+  url: https://optiturn.com/session/new
+- type: GitHubOrganization
+  url: https://github.com/optoro
+- type: StatusPage
+  url: https://status.optiturn.com/
+- type: LLMsTxt
+  url: llms/optoro-llms.txt
+- type: Webhooks
+  url: asyncapi/optoro-webhooks.yml
+- type: Authentication
+  url: authentication/optoro-authentication.yml
+- type: OAuthScopes
+  url: scopes/optoro-scopes.yml
+- type: Conventions
+  url: conventions/optoro-conventions.yml
+- type: ErrorCatalog
+  url: errors/optoro-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/optoro-lifecycle.yml
+- type: Conformance
+  url: conformance/optoro-conformance.yml
+- type: Compliance
+  url: https://www.optoro.com/security/
+- type: TrustCenter
+  url: https://www.optoro.com/security/
+- type: DataModel
+  url: data-model/optoro-data-model.yml
+- type: Sandbox
+  url: sandbox/optoro-sandbox.yml
+- type: ChangeLog
+  url: changelog/optoro-changelog.yml
+- type: RateLimits
+  url: rate-limits/optoro-rate-limits.yml
+- type: Plans
+  url: plans/optoro-plans-pricing.yml
+- type: Packages
+  url: packages/optoro-packages.yml
+- type: MCPServer
+  url: mcp/optoro-mcp.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Overlay
+  url: overlays/optoro-drop-ship-overlay.yaml
+- type: Security
+  url: https://www.optoro.com/security/
+x-enrichment:
+  date: '2026-08-26'
+  status: enriched
+  artifacts_added: 76
+  pass: local-v1

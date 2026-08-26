@@ -1,0 +1,98 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  In-spec "Changelog" / "Change Log" sections in info.description of the published OpenAPI definitions on
+  https://developer.optoro.com, plus the older versions Optoro keeps published side by side
+docs: https://developer.optoro.com/openapi/rmas/openapi
+scheme: per-api
+note: >-
+  Optoro publishes no single site-wide dated changelog. Change history lives INSIDE each OpenAPI definition
+  as a `## Changelog` / `## Change Log` section in info.description, and the superseded versions of each API
+  stay published on the portal alongside the current one so an integrator can diff them. Entries are labelled
+  FEATURE or BREAKING but carry NO dates — the only temporal anchor is the date-stamped version string on the
+  data APIs (Catalogs 2023-08-01, Facilities 2024-08-08, External Bin Changes 2023-05-01). Recorded here
+  verbatim from the specs; API Evangelist has added no dates of its own.
+dated: false
+entries:
+- api: Catalogs
+  version: '2023-08-01'
+  date: '2023-08-01'
+  date_source: version string
+  spec: openapi/optoro-catalogs-openapi.yml
+  url: https://developer.optoro.com/openapi/catalogs/openapi
+  breaking: true
+  changes:
+  - type: FEATURE
+    text: >-
+      The catalog_entry_updates endpoint now accepts a product_identifiers field. UPCs no longer have length
+      validations; multiple ASINs can be associated with the same catalog entry; UPCs can now be associated
+      with multiple catalog entries; update behavior can be specified as either append or replace.
+  - type: BREAKING
+    text: The upc, upcs, and asin fields are no longer accepted by the catalog_entry_updates endpoint.
+  - type: BREAKING
+    text: allowed_channels and disallowed_channels are truly mutually exclusive on the catalog_entry_updates endpoint.
+  supersedes: '2018-05-10'
+- api: RMAs
+  version: '5'
+  date: null
+  spec: openapi/optoro-rmas-openapi.yml
+  url: https://developer.optoro.com/openapi/rmas/openapi
+  breaking: false
+  changes:
+  - type: FEATURE
+    text: The warehouse_receipt_condition item field is added to the RMA item object.
+  - type: FEATURE
+    text: >-
+      NOT_DROPPED_OFF is a new option for an item's package_tracking_status (applicable for items in a
+      partially accepted RMA that were not dropped off).
+  supersedes: '4'
+- api: RMAs
+  version: '4'
+  date: null
+  url: https://developer.optoro.com/openapi/rmas/4/openapi
+  breaking: true
+  changes:
+  - type: FEATURE
+    text: New top-level field bonus_credit_amount_cents (applicable for instant store credit refunds).
+  - type: BREAKING
+    text: The UNEVEN_GC item refund type value is renamed to INSTANT_STORE_CREDIT.
+  supersedes: '3'
+- api: Facilities
+  version: '2024-08-08'
+  date: '2024-08-08'
+  date_source: version string
+  spec: openapi/optoro-facilities-openapi.yml
+  url: https://developer.optoro.com/openapi/facilities/openapi
+  breaking: false
+  changes: []
+  note: Current version; the spec publishes no changelog section.
+- api: External Bin Changes
+  version: '2023-05-01 r1'
+  date: '2023-05-01'
+  date_source: version string
+  spec: openapi/optoro-external-bin-changes-openapi.yml
+  url: https://developer.optoro.com/openapi/external_bin_changes/openapi
+  breaking: false
+  changes: []
+  supersedes: '2022-10-12'
+- api: Drop Ship
+  version: '6.0'
+  date: null
+  spec: openapi/optoro-drop-ship-openapi.yml
+  url: https://developer.optoro.com/openapi/drop_ship/openapi
+  breaking: false
+  changes: []
+  supersedes: '2023-08-15'
+- api: Exchange Orders
+  version: '2.0.0'
+  date: null
+  spec: openapi/optoro-exchange-orders-openapi.yml
+  url: https://developer.optoro.com/openapi/exchange_orders/openapi
+  breaking: false
+  changes: []
+  supersedes: '1'
+company_events:
+- date: '2025-08-19'
+  type: acquisition
+  text: Blue Yonder announced its acquisition of Optoro.
+  url: https://www.optoro.com/returns-news/blue-yonder-acquires-optoro/

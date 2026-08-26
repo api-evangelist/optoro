@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: Exchange Variants
+  description: >
+    The **Exchange Variants** API is what enables Exchanges. It is used to
+    request a list of available product variants, typically items of the same
+    style number, from your ecommerce platform when the shopper will be offered
+    an opportunity to exchange a return item.
+
+
+    **When it is used:**
+
+
+    - Optoro sends an **Exchange Variants** GET message to you when the shopper
+    chooses a return reason that prompts the returns portal to show exchange
+    options for an item that has an associated variant identifier.
+  version: 1.0.0
+paths:
+  /sku/{parent_sku}/variants:
+    get:
+      summary: Exchange Variants
+      operationId: variants
+      parameters:
+        - in: header
+          name: X-Optiturn-Id
+          schema:
+            type: string
+          required: true
+          example: Modrno
+        - in: header
+          name: X-Optiturn-Api-Version
+          schema:
+            type: string
+            enum:
+              - 1
+          required: true
+        - name: parent_sku
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of product variants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/variants'
+components:
+  schemas:
+    variant:
+      required:
+        - attributes
+        - unit_price_amount_cents
+        - quantity_in_stock
+        - sku
+        - title
+      type: object
+      properties:
+        attributes:
+          description: >-
+            A list of attributes that describe the variant. Such as colors or
+            sizes. See variant attributes
+          type: array
+          items:
+            required:
+              - name
+              - value
+            type: object
+            properties:
+              name:
+                description: Name of attribute describing the variant.
+                type: string
+              value:
+                description: Value of the attribute name.
+                type: string
+          example:
+            - name: Color
+              value: Green
+            - name: Size
+              value: XL
+        quantity_in_stock:
+          description: The quantity in stock for the specific variant
+          type: integer
+        sku:
+          description: The sku for the variant
+          type: string
+          example: 444-12345
+        title:
+          description: The title for the variant
+          type: string
+          example: Fuzzy green t-shirt
+        unit_price_amount_cents:
+          description: Unit price amount in cents of a single unit of a product.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        image_url:
+          description: Product image file link
+          type: string
+          example: https://example.com/img.jpg
+        product_url:
+          description: Product page link
+          type: string
+          example: https://example.com/fuzzy-green
+    variants:
+      type: object
+      properties:
+        variants:
+          description: Array of product variants for the parent item.
+          type: array
+          items:
+            $ref: '#/components/schemas/variant'

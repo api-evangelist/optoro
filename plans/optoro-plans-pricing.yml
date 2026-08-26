@@ -1,0 +1,22 @@
+generated: '2026-08-26'
+method: searched
+source: https://www.optoro.com/
+plan_count: 0
+plans: []
+pricing_model: enterprise-contact-sales
+note: >-
+  Optoro publishes no pricing page and no self-serve plans. https://www.optoro.com/pricing/ returns HTTP 404
+  and there is no pricing link anywhere in the site navigation; the only commercial call to action is
+  "Request a Demo" (https://www.optoro.com/request/demo). API credentials are not self-serve either — the
+  API Overview states "Optoro's Client Success team will provide the credentials used when requesting an
+  access token", and webhook configuration is likewise handled by Client Success. Optoro is an enterprise
+  retail/3PL platform sold through a sales process; as of August 2025 it is owned by Blue Yonder.
+evidence:
+- url: https://www.optoro.com/pricing/
+  status: 404
+- url: https://www.optoro.com/
+  status: 200
+  note: no pricing link in navigation or footer
+- url: https://developer.optoro.com/content/api_overview
+  status: 200
+  note: credentials issued by Optoro Client Success, not self-serve

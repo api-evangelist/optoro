@@ -1,0 +1,276 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/*.yml 4xx/5xx responses, enriched from https://developer.optoro.com/content/api_overview
+docs: https://developer.optoro.com/content/api_overview
+format: custom-json
+rfc9457: false
+note: 'Optoro does NOT use RFC 9457 application/problem+json. Every error body is application/json with a custom
+  envelope: a `message` string plus, on validation failures, an `errors` array of {field, code} objects. There is
+  no machine-readable error `type` URI, no error-code registry, and no per-error documentation page — the only cross-API
+  error contract is the status-code table in the API Overview.'
+envelope:
+  fields:
+  - name: message
+    type: string
+    description: Human-readable summary of the failure
+  - name: errors
+    type: array
+    description: Field-level validation errors; each item has `field` (the offending attribute) and `code` (e.g.
+      missing_field)
+  example:
+    message: Validation Failed
+    errors:
+    - field: rma_identifier
+      code: missing_field
+problem_count: 10
+problems:
+- status: '400'
+  title: Bad Request
+  meaning: The request cannot be understood, likely because it is malformed / has invalid syntax.
+  remediation: Fix the JSON payload structure and resend. Not retriable unchanged.
+  retriable: false
+  occurrences: 28
+  spec_descriptions:
+  - Bad Request
+  - Bad Request. Check structure of JSON payload.
+  - Error response will be HTTP status code 400 for other bad/unparseable requests.
+  - Malformed request. Check structure of JSON payload.
+  - Status code should be returned when there is a bad/unparseable request.
+  - The server cannot process the request due to a client error. Check the message and detail fields for further
+    information.
+  source_operations:
+  - OrdersIndex
+  - batchOrdersCreate
+  - catalogEntryUpdate
+  - createExternalBinChange
+  - dispositions
+  - drop_shipment_cancellation
+  - drop_shipment_confirmation
+  - drop_shipment_partial_cancellation
+  - final_dispositions
+  - listingsIndex
+  - listingsShow
+  - listingsUpdate
+  - oauthTokenFetch
+  - ordersCancel
+  - ordersCreate
+  - ordersShow
+  - ordersUpdate
+  - outbound_asns
+  - post /asns
+  - post /forward_orders
+  - post /inventory_receipt
+  - put /asns/{asn-number}
+  - shipmentsIndex
+  - shipmentsShow
+- status: '401'
+  title: Unauthorized
+  meaning: The request lacks a bearer token, or the bearer token is expired.
+  remediation: Request a new access token from https://auth.optiturn.com/oauth/token and retry once.
+  retriable: false
+  occurrences: 28
+  spec_descriptions:
+  - Error response will be HTTP status code 401 for missing or bad api_key (these have no body).
+  - Invalid credentials used to obtain an access token.
+  - Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+  - Not Authorized
+  - Not Authorized. A new Authentication Token from the client’s services and retry the request.
+  - Not Authorized. A new authentication token will be requested from the client's services and the request will
+    be retried.
+  source_operations:
+  - OrdersIndex
+  - batchOrdersCreate
+  - catalogEntryUpdate
+  - createExternalBinChange
+  - dispositions
+  - drop_shipment_cancellation
+  - drop_shipment_confirmation
+  - drop_shipment_partial_cancellation
+  - final_dispositions
+  - listingsIndex
+  - listingsShow
+  - listingsUpdate
+  - oauthTokenFetch
+  - ordersCancel
+  - ordersCreate
+  - ordersShow
+  - ordersUpdate
+  - outbound_asns
+  - post /asns
+  - post /forward_orders
+  - post /inventory_receipt
+  - put /asns/{asn-number}
+  - shipmentsIndex
+  - shipmentsShow
+- status: '404'
+  title: Not Found
+  meaning: The requested resource could not be found.
+  remediation: Verify the identifier in the path. Not retriable unchanged.
+  retriable: false
+  occurrences: 10
+  spec_descriptions:
+  - Not Found
+  - The requested resource could not be found.
+  source_operations:
+  - OrdersIndex
+  - batchOrdersCreate
+  - listingsIndex
+  - listingsShow
+  - listingsUpdate
+  - oauthTokenFetch
+  - ordersCancel
+  - ordersCreate
+  - ordersShow
+  - ordersUpdate
+- status: '413'
+  title: Payload Too Large
+  meaning: The request body exceeds the size Optoro accepts (raised by the Drop Ship batch and order endpoints).
+  remediation: Split the batch into smaller requests.
+  retriable: false
+  occurrences: 5
+  spec_descriptions:
+  - Request too large
+  source_operations:
+  - batchOrdersCreate
+  - ordersCancel
+  - ordersCreate
+  - ordersShow
+  - ordersUpdate
+- status: '422'
+  title: Unprocessable Entity
+  meaning: The request contains validation errors. Validations vary by API.
+  remediation: Read the errors[] array (field + code) and correct the payload. Not retriable unchanged.
+  retriable: false
+  occurrences: 23
+  spec_descriptions:
+  - Error response will be HTTP status code 422 for validation errors (missing or invalid fields in this case).
+  - Order not created response
+  - The request could not not be processed. Ensure parameter values are valid.
+  - Unprocessable Entity
+  - Validation Failure
+  - Validation error. Fix request payload and try again.
+  source_operations:
+  - OrdersIndex
+  - batchOrdersCreate
+  - catalogEntryUpdate
+  - dispositions
+  - drop_shipment_cancellation
+  - drop_shipment_confirmation
+  - drop_shipment_partial_cancellation
+  - final_dispositions
+  - listingsIndex
+  - listingsUpdate
+  - oauthTokenFetch
+  - ordersCancel
+  - ordersCreate
+  - ordersShow
+  - ordersUpdate
+  - outbound_asns
+  - post /asns
+  - post /forward_orders
+  - post /inventory_receipt
+  - put /asns/{asn-number}
+  - shipmentsIndex
+  - upsertFacility
+  - vendorUpdate
+- status: '429'
+  title: Too Many Requests
+  meaning: The request is being rate limited.
+  remediation: Retry with exponential backoff. No Retry-After header is sent.
+  retriable: true
+  occurrences: 0
+  spec_descriptions: []
+  source_operations: []
+  note: Documented in the API Overview response-code table but not declared in any OpenAPI response object.
+- status: '500'
+  title: Internal Server Error
+  meaning: The request failed because of an unexpected server error.
+  remediation: Retry three times with exponential backoff; escalate to Optoro Client Support if it persists.
+  retriable: true
+  occurrences: 12
+  spec_descriptions:
+  - An internal error occured. Please contact Optoro for further guidance.
+  - Internal Server Error
+  - Internal Server Error.
+  - Status code should be returned when there is a server error.
+  source_operations:
+  - createExternalBinChange
+  - dispositions
+  - drop_shipment_cancellation
+  - drop_shipment_confirmation
+  - drop_shipment_partial_cancellation
+  - final_dispositions
+  - ordersCancel
+  - ordersUpdate
+  - outbound_asns
+  - post /forward_orders
+  - showExternalBinChange
+  - vendorUpdate
+- status: '502'
+  title: Bad Gateway
+  meaning: The request was not able to reach the upstream server.
+  remediation: Retry with exponential backoff.
+  retriable: true
+  occurrences: 8
+  spec_descriptions:
+  - Bad Gateway.
+  - Client Server Unavailable
+  - Status code should be returned when Optoro's servers are unavailable.
+  source_operations:
+  - dispositions
+  - drop_shipment_cancellation
+  - drop_shipment_confirmation
+  - drop_shipment_partial_cancellation
+  - final_dispositions
+  - outbound_asns
+  - post /forward_orders
+  - vendorUpdate
+- status: '503'
+  title: Service Unavailable
+  meaning: The request failed because the upstream server did not respond in time / capacity.
+  remediation: Retry with exponential backoff.
+  retriable: true
+  occurrences: 3
+  spec_descriptions:
+  - Service Unavailable.
+  - Service is unavailable and/or over capacity. Please try again later.
+  source_operations:
+  - createExternalBinChange
+  - showExternalBinChange
+  - vendorUpdate
+- status: '504'
+  title: Gateway Timeout
+  meaning: Upstream timed out.
+  remediation: Retry with exponential backoff.
+  retriable: true
+  occurrences: 3
+  spec_descriptions:
+  - Gateway Timeout.
+  - Service is over capacity. Please try again later.
+  source_operations:
+  - createExternalBinChange
+  - showExternalBinChange
+  - vendorUpdate
+- status: 5XX
+  title: Server Error (range)
+  meaning: Range response declared instead of a discrete code by 13 operations.
+  remediation: Retry with exponential backoff.
+  retriable: true
+  occurrences: 13
+  spec_descriptions:
+  - Internal Server Error
+  - Server error. Retry request using an exponential backoff.
+  source_operations:
+  - OrdersIndex
+  - batchOrdersCreate
+  - catalogEntryUpdate
+  - listingsIndex
+  - listingsShow
+  - listingsUpdate
+  - oauthTokenFetch
+  - ordersCreate
+  - ordersShow
+  - shipmentsIndex
+  - shipmentsShow
+  - shipmentsShowByIdentifier
+  - upsertFacility

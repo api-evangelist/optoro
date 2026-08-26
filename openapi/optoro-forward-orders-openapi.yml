@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: Forward Orders (DEPRECATED)
+  description: >-
+    The Forward Order API is used to inform Optoro of new orders from your
+    Forward order system.
+  version: 1.0.0
+  contact:
+    name: Receiving
+servers:
+  - url: https://orders.optiturn.com
+    description: Production
+  - url: https://orders.sandbox.optiturn.com
+    description: Sandbox
+  - url: https://orders.stage.optiturn.com
+    description: Staging
+components:
+  schemas:
+    ForwardOrders:
+      required:
+        - orders
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+          description: >-
+            An array with one or more forward orders.  Optoro recommends
+            batching orders, where total payload size is not to exceed 10KB.
+    Order:
+      required:
+        - identifier
+        - items
+      properties:
+        identifier:
+          type: string
+          example: 1193Z93LL
+          description: >-
+            A unique order identifier for this order. Must be a unique value per
+            order.
+        concept:
+          type: string
+          example: Best Brand
+          description: >-
+            A unique identifier for the 'concept' or 'brand' the order was
+            placed from. This allows a client to delineate orders across
+            different concepts or brands when the client’s parent company has
+            multiple retail brands.
+        postal_code:
+          type: string
+          example: 55127
+          description: The postal / zip code portion of the order's shipping address.
+        created_at:
+          type: string
+          example: '2023-09-11T00:00:00.000Z'
+          description: >-
+            iso8601 formatted date string representing when the order was
+            created (YYYY-MM-DDT00:00:00).
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          description: An array of order items in the order.
+    Item:
+      required:
+        - identifier
+        - upc
+        - sku
+        - quantity
+      properties:
+        identifier:
+          type: string
+          example: f34d97a7-f175-4a52-9e94-405631adbb3e4
+          description: >-
+            ID for individual item within the Order. Must be a unique value per
+            item.
+        upc:
+          type: string
+          example: 848709033673
+          description: UPC that represents the product for this order item.
+        sku:
+          type: string
+          example: 0123445667A
+          description: >-
+            An identifier which matches the client catalog and represents the
+            product for this order item.
+        quantity:
+          type: integer
+          example: 2
+          description: The number of units within the order for each SKU (or UPC).
+        tracking_number:
+          type: string
+          example: 1Z999AA10123456784
+          description: >-
+            The tracking number for the package containing this order item. 
+            This allows operations to scan the tracking number for undeliverable
+            items.
+        reverse_tracking_number:
+          type: string
+          example: 2396343519220426000
+          description: >-
+            The return tracking number for the package containing this order
+            item.  This allows operations to scan the tracking number for items
+            returned by the customer.
+        dropship_identifier:
+          type: string
+          example: 1872
+          description: ID used to track item that was drop-shipped.
+        shipped_date:
+          type: string
+          example: '2023-08-20T04:00:00Z'
+          description: >-
+            iso8601 formatted date string (YYYY-MM-DDT00:00:00) representing
+            when the order was shipped.
+        return_policy_end_date:
+          type: string
+          example: '2023-08-15T04:00:00Z'
+          description: >-
+            iso8601 formatted date string (YYYY-MM-DDT00:00:00) representing
+            when the order item is no longer eligible for return.
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          description: >-
+            Optional, labels used for clients to be able to print a custom
+            barcode from the rework tool.
+    Label:
+      required:
+        - type
+        - name
+        - value
+      properties:
+        type:
+          type: string
+          example: barcode
+          description: Label type, allowed values are barcode or text
+        name:
+          type: string
+          example: title
+          description: >-
+            Label name, used with type to add a configurable barcode or text
+            field name
+        value:
+          type: string
+          example: 10231030023
+          description: The corresponding value of name
+paths:
+  /forward_orders:
+    post:
+      summary: Create/Update Forward Orders.
+      description: >-
+        The request payload looks the same for both. Updates can modify the
+        contents of an order and its order items. Updates can also add order
+        items to an order. Orders and order items cannot be deleted.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForwardOrders'
+      responses:
+        '200':
+          description: Successfully created or update order
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          description: >-
+            Status code should be returned when there is a bad/unparseable
+            request.
+        '401':
+          description: >-
+            The user is not authenticated or not authorized (these have no
+            body).
+        '422':
+          description: >-
+            Error response will be HTTP status code 422 for validation errors
+            (missing or invalid fields in this case).
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Validation Failed
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                          example: orders/1/items/0/sku | orders/1/items/0/upc
+                        code:
+                          type: string
+                          enum:
+                            - missing_field
+                            - invalid_type
+                            - invalid_format
+                            - invalid
+                          example: missing_field
+        '500':
+          description: Status code should be returned when there is a server error.
+        '502':
+          description: >-
+            Status code should be returned when Optoro's servers are
+            unavailable.

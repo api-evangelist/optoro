@@ -1,0 +1,227 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  components.schemas and inline request/response schemas across openapi/*.yml, cross-checked against
+  https://developer.optoro.com/content/rm_integration_guide and .../rx_integration_guide
+note: >-
+  Optoro's 17 definitions are not one shared object graph — they are per-service contracts with LOCAL schema
+  components and no $ref reuse across files. Entities below are therefore reconstructed by name and by the
+  identifier fields the services exchange (`sku`, `upc`, `program_identifier`, `unit_identifier`,
+  `order_identifier`, `rma_identifier`, `vendor_identifier`, `warehouse_identifier`/`store_identifier`,
+  `optiturn_lp`). Relationships are stated only where a field genuinely carries the other entity's identifier
+  in a published schema.
+identifier_conventions:
+- field: program_identifier
+  meaning: The retailer/brand program a record belongs to. The multi-tenant key across ASN, Disposition Update, Drop Ship manifest items and Final Disposition.
+- field: unit_identifier
+  meaning: A single physical returned item under Optoro's control.
+- field: optiturn_lp
+  meaning: OptiTurn license plate — the scannable label on a unit or carton.
+- field: sku
+  meaning: Retailer SKU. The join key between the Catalogs master and every operational record.
+- field: upc
+  meaning: GS1 UPC barcode; in Catalogs 2023-08-01 it moved into product_identifiers[].{value,type}.
+- field: order_identifier
+  meaning: Retailer order number; joins Returns Portal Orders to RMAs and Exchange Orders.
+- field: rma_identifier
+  meaning: Return merchandise authorization number issued by the Optoro returns portal.
+- field: asn_number
+  meaning: Advance ship notice number; the addressable key for PUT /asns/{asn-number}.
+entities:
+- name: CatalogEntry
+  spec: openapi/optoro-catalogs-openapi.yml
+  operation: catalogEntryUpdate
+  description: Product master record used for dispositioning, routing, reporting and resale decisions.
+  key_fields: [sku, product_identifiers, allowed_channels, disallowed_channels, custom fields]
+- name: ProductIdentifier
+  spec: openapi/optoro-catalogs-openapi.yml
+  description: 'A barcode or external identifier for a catalog entry: {value, type: upc|asin|generic}.'
+- name: Facility
+  spec: openapi/optoro-facilities-openapi.yml
+  operation: upsertFacility
+  description: Store or warehouse where returns are received and processed.
+- name: Vendor
+  spec: openapi/optoro-rtv-openapi.yml
+  operation: vendorUpdate
+  description: Return-to-vendor counterparty and the agreement terms governing RTV routing.
+- name: AdvanceShipNotice
+  spec: openapi/optoro-asn-openapi.yml
+  description: Inbound shipment header — asn_number, asn_type, carrier, tracking_number, ship_date, from, to, cartons[].
+- name: Carton
+  spec: openapi/optoro-asn-openapi.yml
+  description: A physical box on an ASN, carrying identifier, reference and details[].
+- name: Detail
+  spec: openapi/optoro-asn-openapi.yml
+  description: A line on a carton describing the returned unit — sku, upc, asin, condition, quantity, return_reason, return_date, serial_number, unit_identifier, vendor_identifier, eligibility_flags, labels[].
+- name: OutboundASN
+  spec: openapi/optoro-outbound-asn-openapi.yml
+  description: Outbound shipment event Optoro posts to the customer, including carrier and carrier_payment_type.
+- name: InventoryReceipt
+  spec: openapi/optoro-inventory-receipt-openapi.yml
+  description: Real-time notification that inventory has been received at a facility.
+- name: DispositionUpdate
+  spec: openapi/optoro-disposition-update-openapi.yml
+  description: A unit's disposition transition — from_disposition/to_disposition, from_condition/to_condition, from_sku/to_sku, location_identifier, optiturn_lp, warehouse_identifier or store_identifier, user_login, timestamp.
+- name: FinalDisposition
+  spec: openapi/optoro-final-disposition-openapi.yml
+  description: Terminal outcome recorded for a unit.
+- name: ExternalBinChange
+  spec: openapi/optoro-external-bin-changes-openapi.yml
+  description: A bin move applied to a unit or a location; the only Optoro entity with both a create and a read-by-id operation.
+- name: Lot
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: A grouped set of returned units offered for resale — template_name, warehouse_name, weight, photo_urls, manifest_items[].
+- name: ManifestItem
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: One line of a lot manifest — sku, upc, condition, item_title, manufacturer, category_lineage, vendor_identifier, vendor_name, program_identifier.
+- name: Listing
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: A lot made purchasable on a channel — channel, condition, quantity, lot.
+- name: DropShipOrder
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: An order placed against listings — billing_address, shipping_address, order_items[], price_cents, tax_cents, shipping_*, status (incl. pending_payment), packing_slip_identifier.
+- name: DropShipOrderItem
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: A line on a drop-ship order — sku, brand, condition, quantity, price_cents, tax_cents, shipping_cost_cents, status.
+- name: Shipment
+  spec: openapi/optoro-drop-ship-openapi.yml
+  description: Fulfilment of a drop-ship order — carrier, tracking_number, shipping_method, billed_weight, shipment_items[].
+- name: RetailOrder
+  spec: openapi/optoro-returns-portal-orders-openapi.yml
+  description: The retailer's own order snapshot posted to Optoro to power return initiation — order, items[], customer, refunds[], discounts[], fulfillments, transactions, adjustments.
+- name: Customer
+  spec: openapi/optoro-returns-portal-orders-openapi.yml
+  description: Shopper on a retail order, with shipping and billing addresses.
+- name: Refund
+  spec: openapi/optoro-returns-portal-orders-openapi.yml
+  description: A refund issued against a retail order; posted back by the retailer and echoed to the RMA webhook.
+- name: RMA
+  spec: openapi/optoro-rmas-openapi.yml
+  description: Return merchandise authorization raised in the Optoro returns portal, delivered to the retailer as a webhook — items[], return_method, tracking_number, package_tracking_status, receiving_status, refund_type, bonus_credit_amount_cents, warehouse_receipt_condition.
+- name: ExchangeOrder
+  spec: openapi/optoro-exchange-orders-openapi.yml
+  description: Replacement order (or instant gift-card refund) Optoro asks the retailer's ecommerce platform to create, idempotent on original_order_id.
+- name: ExchangeVariant
+  spec: openapi/optoro-variants-openapi.yml
+  description: Available product variant for a parent SKU, returned by the retailer to Optoro so the shopper can pick an even exchange.
+- name: DropShipmentConfirmation
+  spec: openapi/optoro-drop-ship-webhooks-openapi.yml
+  description: Confirmation, cancellation or partial cancellation of a drop shipment, posted by Optoro to the customer.
+relationships:
+- from: CatalogEntry
+  to: ProductIdentifier
+  type: has_many
+  via: product_identifiers.items
+  confidence: high
+- from: AdvanceShipNotice
+  to: Carton
+  type: has_many
+  via: cartons
+  confidence: high
+- from: Carton
+  to: Detail
+  type: has_many
+  via: details
+  confidence: high
+- from: Detail
+  to: CatalogEntry
+  type: belongs_to
+  via: sku / upc
+  confidence: medium
+  note: Join by identifier value; no $ref links the two specs.
+- from: Lot
+  to: ManifestItem
+  type: has_many
+  via: manifest_items
+  confidence: high
+- from: Listing
+  to: Lot
+  type: has_one
+  via: lot
+  confidence: high
+- from: DropShipOrder
+  to: DropShipOrderItem
+  type: has_many
+  via: order_items
+  confidence: high
+- from: DropShipOrder
+  to: Shipment
+  type: has_many
+  via: shipmentsShowByIdentifier (GET /shipments/identifier/{id} returns the shipments for an order)
+  confidence: high
+- from: DropShipOrder
+  to: shipping_address
+  type: has_one
+  via: shipping_address
+  confidence: high
+- from: DropShipOrder
+  to: billing_address
+  type: has_one
+  via: billing_address
+  confidence: high
+- from: RetailOrder
+  to: Customer
+  type: has_one
+  via: customer
+  confidence: high
+- from: RetailOrder
+  to: Refund
+  type: has_many
+  via: refunds
+  confidence: high
+- from: RMA
+  to: RetailOrder
+  type: belongs_to
+  via: items[].order_identifier
+  confidence: high
+- from: RMA
+  to: ExchangeOrder
+  type: has_one
+  via: items[].exchange_order_identifier
+  confidence: high
+- from: ExchangeOrder
+  to: RetailOrder
+  type: belongs_to
+  via: original_order_id
+  confidence: high
+- from: ExchangeVariant
+  to: CatalogEntry
+  type: belongs_to
+  via: parent_sku
+  confidence: medium
+- from: DispositionUpdate
+  to: Facility
+  type: belongs_to
+  via: warehouse_identifier / store_identifier
+  confidence: medium
+- from: DispositionUpdate
+  to: CatalogEntry
+  type: belongs_to
+  via: sku / upc
+  confidence: medium
+- from: ManifestItem
+  to: Vendor
+  type: belongs_to
+  via: vendor_identifier
+  confidence: medium
+- from: Detail
+  to: Vendor
+  type: belongs_to
+  via: vendor_identifier
+  confidence: medium
+- from: ExternalBinChange
+  to: Facility
+  type: belongs_to
+  via: location identifier
+  confidence: low
+  note: Bin/location semantics are described in prose; the spec does not name a facility field.
+shared_error_schema:
+  name: ValidationFailure
+  fields: [message, errors]
+  present_in:
+  - openapi/optoro-catalogs-openapi.yml
+  - openapi/optoro-disposition-update-openapi.yml
+  - openapi/optoro-drop-ship-webhooks-openapi.yml
+  - openapi/optoro-facilities-openapi.yml
+  - openapi/optoro-final-disposition-openapi.yml
+  note: The only schema name Optoro reuses across services — duplicated per spec rather than $ref'd.

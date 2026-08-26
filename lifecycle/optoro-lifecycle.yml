@@ -1,0 +1,90 @@
+generated: '2026-08-26'
+method: searched
+source: https://developer.optoro.com/content/api_overview
+docs:
+- https://developer.optoro.com/content/api_overview
+- https://developer.optoro.com/openapi/rmas/openapi
+versioning:
+  scheme: mixed
+  detail: >-
+    Three coexisting schemes. (1) An HTTP header, `X-Optiturn-Api-Version`, whose accepted values are
+    enumerated per API in that API's spec — the API Overview says "Some APIs are versioned using an HTTP
+    header. The header name and value will vary by API, so check the relevant API specification."
+    (2) Date-stamped versions for the data APIs (Catalogs 2018-05-10 -> 2023-08-01; External Bin Changes
+    2022-10-12 -> 2023-05-01; Facilities 2024-08-08). (3) Integer/semver majors for the event APIs
+    (RMAs 3 -> 4 -> 5; Exchange Orders 1 -> 2; Drop Ship 2023-08-15 -> 6.0).
+  header: X-Optiturn-Api-Version
+  current:
+    rmas: '5.0.0'
+    drop_ship: '6.0'
+    catalogs: '2023-08-01'
+    facilities: '2024-08-08'
+    external_bin_changes: '2023-05-01 r1'
+    exchange_orders: '2.0.0'
+    returns_portal_orders: '3.0.0'
+    asn: '1.0.0'
+  docs: https://developer.optoro.com/content/api_overview
+old_versions_still_published:
+- api: RMAs
+  versions: ['3', '4']
+  url: https://developer.optoro.com/openapi/rmas/3/openapi
+- api: RMAs
+  versions: ['4']
+  url: https://developer.optoro.com/openapi/rmas/4/openapi
+- api: Catalogs
+  versions: ['2018-05-10']
+  url: https://developer.optoro.com/openapi/catalogs/2018-05-10/openapi
+- api: Drop Ship
+  versions: ['2023-08-15']
+  url: https://developer.optoro.com/openapi/drop_ship/2023-08-15/openapi
+- api: Exchange Orders
+  versions: ['1']
+  url: https://developer.optoro.com/openapi/exchange_orders/1/openapi
+- api: External Bin Changes
+  versions: ['2022-10-12']
+  url: https://developer.optoro.com/openapi/external_bin_changes/2022-10-12/openapi
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  practice: >-
+    Optoro has no written deprecation or sunset policy, and neither RFC 8594 `Sunset` nor the `Deprecation`
+    header appears in any of the 17 definitions. What Optoro DOES do is mark superseded surfaces in-spec and
+    keep prior versions of every API published on the developer portal side-by-side with the current one, so
+    an integrator can diff. The one explicitly retired API is Forward Orders, whose title is
+    "Forward Orders (DEPRECATED)" and whose single operation carries `deprecated: true` in the OpenAPI.
+  evidence:
+  - openapi/optoro-forward-orders-openapi.yml
+  - https://developer.optoro.com/openapi/forward_orders/openapi
+deprecated_operations:
+- spec: openapi/optoro-forward-orders-openapi.yml
+  path: POST /forward_orders
+  operation_id: null
+  summary: Create/Update Forward Orders.
+  deprecated: true
+  replacement: not stated in the specification
+breaking_change_signalling:
+  method: in-spec changelog sections marked BREAKING
+  examples:
+  - 'Catalogs 2023-08-01: BREAKING — the `upc`, `upcs`, and `asin` fields are no longer accepted by the
+    catalog_entry_updates endpoint'
+  - 'Catalogs 2023-08-01: BREAKING — `allowed_channels` and `disallowed_channels` are truly mutually exclusive'
+  - 'RMAs v4: BREAKING — the `UNEVEN_GC` item refund type value is renamed to `INSTANT_STORE_CREDIT`'
+  see: changelog/optoro-changelog.yml
+sla:
+  url: null
+  uptime_target: null
+  note: No public SLA or uptime commitment is published. Support routes through Optoro Client Success / Client Support.
+status_page:
+  url: https://status.optiturn.com/
+  public: false
+  http_status: 200
+  note: >-
+    A status page exists at status.optiturn.com but it is customer-gated — the root 302s to
+    /access/login (a Statuspage-style login form), so incident history and current component state are not
+    readable without an OptiTurn account. Recorded as present-but-gated. status.optoro.com does not resolve
+    to a valid TLS endpoint (handshake failure).
+support:
+  help_center: https://help.optoro.com/hc/en-us
+  note: Help center sits behind a Cloudflare bot challenge (HTTP 403 to non-browser clients) but is live.

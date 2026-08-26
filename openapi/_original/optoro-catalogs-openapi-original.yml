@@ -1,0 +1,854 @@
+openapi: 3.1.0
+info:
+  title: Catalogs
+  version: '2023-08-01'
+  description: >
+    ## Introduction
+
+    The Catalogs API provides an easy, seamless integration between your product
+    merchandising system and Optoro's platform. This ensures that all catalog
+    entries are up to date with the highest quality product information. Optoro
+    can then disposition and route returned items, ensuring retailers receive
+    maximum recovery at the highest possible velocity.
+
+    ## Data Handling
+
+    The Catalogs API is intended to be updated in real time from your
+    merchandising system. For large, initial catalog data transfers, Optoro
+    recommends a CSV file transfer. For ongoing maintenance, Optoro recommends
+    utilizing the Catalogs API.
+
+    When submitting catalog data, Optoro will perform minimal validation. Data
+    sent to the API will be treated as accurate. Null or empty values will be
+    saved and can overwrite previously submitted data. If this is not desired
+    then omit the field from the update request.
+
+    ## Custom Fields
+
+    You may submit additional product fields to the Catalogs API. These fields
+    will be made available for dispositioning, routing, reporting, and other
+    decision making within OptiTurn.
+
+    For example, if you have products that are customizable, you might include a
+    `customizable` boolean field in your catalog updates. This field could then
+    be used to route customizable items to the appropriate channel.
+
+    You must work with Optoro's Client Success team to configure this feature.
+
+    ## Change Log
+
+    ### Version 2023-08-01
+
+    * FEATURE: The `catalog_entry_updates` endpoint now accepts a
+    `product_identifiers` field. This enables the following:
+      * UPCs no longer have length validations.
+      * Multiple ASINs can be associated with the same catalog entry.
+      * UPCs can now be associated with multiple catalog entries.
+      * Update behavior can be specified: either append or replace existing UPCs/ASINs.
+    * BREAKING: The `upc`, `upcs`, and `asin` fields are no longer accepted by
+    the `catalog_entry_updates` endpoint. * BREAKING: `allowed_channels` and
+    `disallowed_channels` are truly mutually exclusive on the
+      `catalog_entry_updates` endpoint.
+servers:
+  - url: https://catalogs.optiturn.com
+    description: Production
+  - url: https://catalogs.sandbox.optiturn.com
+    description: Sandbox
+components:
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}
+  parameters:
+    versionHeader:
+      name: Optiturn-Catalogs-Version
+      in: header
+      description: >
+        The version of the API to use. Must specify '2023-08-01' to use the
+        current API version. Defaults to '2018-05-10' if omitted.
+      required: true
+      schema:
+        type: string
+  schemas:
+    sku:
+      type: string
+      minLength: 1
+    ValidationFailure:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+              - field
+              - code
+              - message
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                  - missing_field
+                  - invalid_type
+                  - invalid
+              message:
+                type: string
+                description: Human-readable description of the validation failure.
+  responses:
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+    Unauthorized:
+      description: >
+        Missing, expired, or invalid OAuth bearer token. Request a new token
+        from the auth service.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+paths:
+  /catalog_entry_updates:
+    post:
+      summary: Create / Update Catalog Entry
+      description: >
+        A catalog entry is identified by its SKU. If the Catalogs API cannot
+        locate the SKU, a new catalog entry is created. If the SKU is located,
+        the catalog entry is updated with the provided payload.
+      operationId: catalogEntryUpdate
+      security:
+        - oAuth2: []
+      parameters:
+        - $ref: '#/components/parameters/versionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                catalog_entry_update:
+                  type: object
+                  allOf:
+                    - required:
+                        - sku
+                        - title
+                    - anyOf:
+                        - title: Wholesale Price Cents
+                          required:
+                            - wholesale_price_cents
+                          properties:
+                            wholesale_price_cents:
+                              type: integer
+                        - title: Retail Price Cents
+                          required:
+                            - retail_price_cents
+                          properties:
+                            retail_price_cents:
+                              type: integer
+                      x-error:
+                        anyOf: >-
+                          wholesale_price_cents and/or retail_price_cents must
+                          be specified.
+                    - not:
+                        required:
+                          - brand
+                          - concept
+                      x-error: >-
+                        Either brand or concept can be specified, not both.
+                        Concept is preferred.
+                    - not:
+                        required:
+                          - allowed_channels
+                          - disallowed_channels
+                      x-error: >-
+                        Either allowed_channels or disallowed_channels can be
+                        specified, not both.
+                    - additionalProperties: true
+                    - if:
+                        title: Leaf Category Present
+                        required:
+                          - leaf_category
+                      then:
+                        title: Leaf Category Present
+                        required:
+                          - subcategory
+                      else:
+                        title: Leaf Category Missing
+                      x-error: If leaf_category is present, subcategory is required.
+                    - if:
+                        title: Leaf Category Present
+                        required:
+                          - subcategory
+                      then:
+                        title: Leaf Category Present
+                        required:
+                          - category
+                      else:
+                        title: Leaf Category Missing
+                      x-error: If subcategory is present, category is required.
+                    - type: object
+                      additionalProperties: true
+                      properties:
+                        sku:
+                          $ref: '#/components/schemas/sku'
+                          description: >
+                            A catalog entry's SKU. This value must be unique. If
+                            you are using concepts (see below), then the SKU
+                            must be unique across all catalog entries for the
+                            concept. If not using concepts, the SKU must be
+                            unique across your entire catalog.
+                        concept:
+                          type:
+                            - string
+                            - 'null'
+                          description: >
+                            A unique identifier for the retail 'concept' or
+                            'brand' to which the product belongs. This
+                            differentiates similar products when the your
+                            company has multiple retail concepts. Must work with
+                            Professional Services when using this field to
+                            uniquely identify catalog entries.
+                        merchant:
+                          type:
+                            - string
+                            - 'null'
+                          description: >
+                            The name of the merchant that sells the product.
+                            Used to differentiate products when your company
+                            supports multiple merchants.
+                        title:
+                          type: string
+                          description: Complete product name.
+                          minLength: 1
+                        description:
+                          type:
+                            - string
+                            - 'null'
+                          description: Detailed product description.
+                        product_identifiers:
+                          type: object
+                          required:
+                            - items
+                          properties:
+                            items:
+                              type: array
+                              description: >
+                                A list of product identifiers that should be
+                                associated with the catalog entry.
+                              items:
+                                type: object
+                                required:
+                                  - value
+                                properties:
+                                  value:
+                                    type: string
+                                    description: >
+                                      A barcode or other value that can uniquely
+                                      identify a product.
+                                  type:
+                                    type: string
+                                    description: >
+                                      The kind of product identifier. Can be one
+                                      of the following:
+
+                                      - `upc` - Universal Product Code. A
+                                      barcode number that is ususally 8, 12, 13,
+                                      or 14 characters.
+
+                                      - `asin` - Amazon Standard Identification
+                                      Number. A 10-character alphanumeric unique
+                                      identifier assigned by Amazon.com.
+
+                                      - `generic` - a catch-all if the type is
+                                      unknown, should be avoided.
+                                    default: generic
+                                    enum:
+                                      - upc
+                                      - asin
+                                      - generic
+                            update_behavior:
+                              type: string
+                              description: >
+                                Determines how to handle product identifiers
+                                (e.g. UPCs, ASINs) already associated with this
+                                catalog entry from previous requests.
+
+                                - `append`: Existing list of associated product
+                                identifiers is preserved and appended to.
+
+                                - `replace`: Existing list of associated product
+                                identifiers is removed and replaced.
+                              default: append
+                              enum:
+                                - append
+                                - replace
+                        wholesale_price_cents:
+                          type:
+                            - integer
+                            - 'null'
+                          description: >-
+                            Wholesale price represented in US cents. Either
+                            wholesale or retail price is required.
+                        retail_price_cents:
+                          type:
+                            - integer
+                            - 'null'
+                          description: >
+                            Retail price represented in US cents. Either
+                            wholesale or retail price is required. Retail price
+                            is required for units to be drop shipped.
+                        msrp_cents:
+                          type:
+                            - integer
+                            - 'null'
+                          description: Manufacturer's suggested retail price.
+                        recalled:
+                          type:
+                            - boolean
+                            - 'null'
+                          description: |
+                            flag to indicate whether the item is recalled.
+                        recalled_instructions:
+                          type:
+                            - object
+                            - 'null'
+                          description: >
+                            Contains fields with instructions related to the
+                            recalled product.
+                        outlet_price_cents:
+                          type:
+                            - integer
+                            - 'null'
+                          description: |
+                            Outlet store price represented in US cents.
+                        category:
+                          type: string
+                          description: >
+                            Root of the product taxonomy (e.g. Toys, Clothing,
+                            etc.). Can be a name or identifier.
+
+                            When updating categories for a SKU, a request must
+                            contain all parent values. For example, if
+                            leaf_category is provided, category and subcategory
+                            must be provided. Category is a required field only
+                            if subcategory is present.
+                        category_name:
+                          type: string
+                          description: >
+                            If the category field represents an external
+                            identifier (i.e. an identifier coming from the your
+                            system), the cateogry_name field should include the
+                            name. If the category field represents a name, then
+                            the category_name field can be omitted.
+                        subcategory:
+                          type: string
+                          description: >
+                            Extend the product taxonomy. Must also include
+                            category. Can be a name or identifier. Subcategory
+                            is a required field only if leaf_category is
+                            present.
+                        subcategory_name:
+                          type: string
+                          description: >
+                            If the subcategory field represents an external
+                            identifier (i.e. an identifier coming from the your
+                            system), the subcateogry_name field should include
+                            the name. If the subcategory field represents a
+                            name, then the subcategory_name field can be
+                            omitted.
+                        leaf_category:
+                          type: string
+                          description: >-
+                            Extend the product taxonomy further. Must also
+                            include category and subcategory. Can be a name or
+                            identifier.
+                        leaf_category_name:
+                          type: string
+                          description: >
+                            If the leaf_category field represents an external
+                            identifier (i.e. an identifier coming from the your
+                            system), the cateogry_name field should include the
+                            name. If the leaf_category field represents a name,
+                            then the cateogry_name field can be omitted.
+                        manufacturer:
+                          type:
+                            - string
+                            - 'null'
+                          description: Name of product’s manufacturer.
+                        part_number:
+                          type:
+                            - string
+                            - 'null'
+                          description: Part number.
+                        model_number:
+                          type:
+                            - string
+                            - 'null'
+                          description: Model number.
+                        url:
+                          type:
+                            - string
+                            - 'null'
+                          description: >-
+                            Product image url. Should use https. Images should
+                            have a minimum of 500px for height or width.
+                          maxLength: 256
+                        color:
+                          type:
+                            - string
+                            - 'null'
+                          description: Product color.
+                        inspection_notes:
+                          type:
+                            - string
+                            - 'null'
+                          description: Custom instructions for the Test and Grade process
+                        size:
+                          type:
+                            - string
+                            - 'null'
+                          description: Product size.
+                        length:
+                          type:
+                            - number
+                            - 'null'
+                          description: Unboxed product length in inches.
+                        width:
+                          type:
+                            - number
+                            - 'null'
+                          description: Unboxed product width in inches.
+                        height:
+                          type:
+                            - number
+                            - 'null'
+                          description: Unboxed product height in inches.
+                        weight:
+                          type:
+                            - number
+                            - 'null'
+                          description: Unboxed product weight in pounds.
+                        shipping_dimensions:
+                          type:
+                            - object
+                            - 'null'
+                          description: >-
+                            The dimensions of the boxed product during shipment.
+                            Always in inches and pounds.
+                          properties:
+                            shipping_length:
+                              type:
+                                - number
+                                - 'null'
+                              description: Boxed product shipping length in inches.
+                            shipping_width:
+                              type:
+                                - number
+                                - 'null'
+                              description: Boxed product shipping width in inches.
+                            shipping_height:
+                              type:
+                                - number
+                                - 'null'
+                              description: Boxed product shipping height in inches.
+                            shipping_weight:
+                              type:
+                                - number
+                                - 'null'
+                              description: Boxed product shipping weight in pounds.
+                        hazmat:
+                          type:
+                            - object
+                            - 'null'
+                          description: >
+                            Information about hazardous materials must be
+                            provided if present in a product. This information
+                            influences dispositioning decisions, determines how
+                            a product can be shipped, and indicates the type of
+                            packaging and labeling required on products. If a
+                            product contains no hazardous material, the entire
+                            hazmat object can be omitted.
+                          additionalProperties: true
+                          properties:
+                            battery:
+                              type:
+                                - string
+                                - 'null'
+                              description: >
+                                An object describing the type of battery.
+
+                                *Note:* This field is only for lithium ion
+                                batteries that are <= 100 Wh or lithium ion
+                                cells that are <= 20 Wh and lithium metal
+                                batteries <=2g of lithium metal or cells <=1g of
+                                lithium metal
+                              enum:
+                                - lithium ion battery only
+                                - lithium ion packed with equipment
+                                - lithium ion contained in equipment
+                                - lithium ion button/coin cell shipped installed
+                                - lithium metal battery only
+                                - lithium metal packed with equipment
+                                - lithium metal contained in equipment
+                                - >-
+                                  lithium metal button/coin cell shipped
+                                  installed
+                                - null
+                            shipped_under_DOT_as:
+                              type:
+                                - string
+                                - 'null'
+                              description: >
+                                Please refer to Title 49 of the Code of Federal
+                                Regulations for hazmat handling as required by
+                                the Department of Transportation for shipping
+                                hazardous materials within the US via ground.
+                              enum:
+                                - Excepted Quantity
+                                - Excepted Package Radioactive
+                                - Consumer Commodity-ID8000
+                                - Limited Quantity
+                                - Fully-Regulated
+                                - Ground-Only-Excepted Combustible Liquid
+                                - Not Restricted
+                                - null
+                            shipped_under_IATA_as:
+                              type:
+                                - string
+                                - 'null'
+                              description: >-
+                                Please refer to the International Air Transport
+                                Association's Dangerous Goods Regulation manual
+                                for shipping dangerous goods via air.
+                              enum:
+                                - Excepted Quantity
+                                - Excepted Package Radioactive
+                                - Consumer Commodity-ID8000
+                                - Limited Quantity
+                                - Fully-Regulated (Passenger Aircraft Eligible)
+                                - Fully-Regulated (Cargo Aircraft Only)
+                                - Not Restricted
+                                - null
+                            shipped_under_IMDG_code_as:
+                              type:
+                                - string
+                                - 'null'
+                              description: >
+                                Please refer to the International Maritime
+                                Dangerous Goods Code for shipping dangerous
+                                goods via ocean.
+                              enum:
+                                - Excepted Quantity
+                                - Excepted Package Radioactive
+                                - Limited Quantity
+                                - Fully-Regulated
+                                - Not Restricted
+                                - null
+                            fully_regulated_components:
+                              type:
+                                - array
+                                - 'null'
+                              description: >
+                                A list of fully regulated hazmat components in
+                                the product. One object per component.
+
+                                You should provide data in this object if
+                                "Fully-Regulated" is provided or otherwise
+                                applicable values are provided into
+                                shipped_under_DOT_as, shipped_under_IATA_as, or
+                                shipped_under_IMDG_code_as indicating a product
+                                as a hazardous material or dangerous good.
+
+                                *Note:* fully regulated components will impact
+                                product disposition at the discretion of Optoro.
+                              items:
+                                type: object
+                                additionalProperties: false
+                                properties:
+                                  hazard_class_or_division:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: >
+                                      Department of Transportation hazard class.
+                                      Will accept number values with up to one
+                                      decimal place.
+                                    enum:
+                                      - '1.1'
+                                      - '1.2'
+                                      - '1.3'
+                                      - '1.4'
+                                      - '1.5'
+                                      - '1.6'
+                                      - '2.1'
+                                      - '2.2'
+                                      - '2.3'
+                                      - '3'
+                                      - '4.1'
+                                      - '4.2'
+                                      - '4.3'
+                                      - '5.1'
+                                      - '5.2'
+                                      - '6.1'
+                                      - '6.2'
+                                      - '7'
+                                      - '8'
+                                      - '9'
+                                      - null
+                                  UN_number:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: >-
+                                      Four digit United Nations number for
+                                      hazardous materials. Example: UN1203
+                                    minLength: 1
+                                  technical_name:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: Technical Name as defined by 49 CFR.
+                                  proper_shipping_name:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: Proper Shipping Name as defined by 49 CFR.
+                                    minLength: 1
+                                  packing_group:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: Packaging group.
+                                    enum:
+                                      - I
+                                      - II
+                                      - III
+                                      - null
+                                  quantity:
+                                    type:
+                                      - number
+                                      - 'null'
+                                    description: >-
+                                      Quantity of hazardous material in the
+                                      product.
+                                  UOM:
+                                    type:
+                                      - string
+                                      - 'null'
+                                    description: >-
+                                      Unit of measure for the quantity
+                                      attribute.
+                                    enum:
+                                      - kg
+                                      - g
+                                      - lb
+                                      - oz
+                                      - L
+                                      - mL
+                                      - gal
+                                      - null
+                            outbound_label:
+                              type:
+                                - array
+                                - 'null'
+                              description: >
+                                An optional collection of labels for display on
+                                shipping tools so that we don't need to attempt
+                                to infer the correct labels based on other
+                                fields.
+                              items:
+                                type: string
+                        vendor_name:
+                          type:
+                            - string
+                            - 'null'
+                          description: Display name for vendor. Used for RTV.
+                        vendor_identifier:
+                          type:
+                            - string
+                            - 'null'
+                          description: Unique identifier for vendor. Used for RTV.
+                        return_authorization_type:
+                          type:
+                            - string
+                            - 'null'
+                          deprecated: true
+                          description: >-
+                            This field is deprecated in favor of the Vendor
+                            Update API.
+                          enum:
+                            - debit_and_destroy
+                            - no_rtv
+                            - open
+                            - prohibited
+                            - required
+                            - vendor_allowance
+                            - null
+                        allowed_channels:
+                          type: array
+                          deprecated: true
+                          description: >-
+                            This field is deprecated in favor of Smart
+                            Disposition Rules.
+                          items:
+                            type: string
+                            enum:
+                              - blinq
+                              - bulq
+                              - rtv
+                              - destroy
+                              - rts_drop_ship
+                              - stock_transfer
+                              - donate
+                              - recycle
+                              - dispose
+                              - rts
+                              - outlets
+                              - client_liquidation
+                        disallowed_channels:
+                          type: array
+                          deprecated: true
+                          description: >-
+                            This field is deprecated in favor of Smart
+                            Disposition Rules.
+                          items:
+                            type: string
+                            enum:
+                              - blinq
+                              - bulq
+                              - rtv
+                              - destroy
+                              - rts_drop_ship
+                              - stock_transfer
+                              - donate
+                              - recycle
+                              - dispose
+                              - rts
+                              - outlets
+                              - client_liquidation
+            examples:
+              catalogEntryUpdate:
+                description: A standard catalog entry update.
+                value:
+                  catalog_entry_update:
+                    sku: '123234345'
+                    title: Bread Box
+                    description: Keeps bread fresh. Features a space-efficient roll-top.
+                    product_identifiers:
+                      items:
+                        - value: '012345678905'
+                          type: upc
+                        - value: '9876543210'
+                          type: asin
+                    wholesale_price_cents: 2999
+                    retail_price_cents: 3999
+                    part_number: 23FDSG4
+                    model_number: 5D4
+                    color: White
+                    category: Kitchen
+                    subcategory: Food Storage
+                    leaf_category: Containers
+                    length: 17.5
+                    width: 10.25
+                    height: 7.75
+                    weight: 2.2
+              replaceUpcs:
+                description: >-
+                  A catalog entry update that replaces (rather than appends to)
+                  existing list of associated UPCs.
+                value:
+                  catalog_entry_update:
+                    sku: '123234345'
+                    title: Bread Box
+                    wholesale_price_cents: 2999
+                    product_identifiers:
+                      items:
+                        - value: '012345678906'
+                          type: upc
+                        - value: '012345678907'
+                          type: upc
+                      update_behavior: replace
+              customFields:
+                description: A catalog entry update containing a custom product field.
+                value:
+                  catalog_entry_update:
+                    sku: '123234345'
+                    title: Bread Box
+                    wholesale_price_cents: 2999
+                    customizable: true
+              hazmat:
+                description: A catalog entry update containing hazmat information.
+                value:
+                  catalog_entry_update:
+                    sku: '123234346'
+                    title: Power Bread Box
+                    wholesale_price_cents: 4999
+                    hazmat:
+                      battery: lithium ion battery only
+                      fully_regulated_components:
+                        - hazard_class_or_division: '1.1'
+                          UN_number: UN1841
+                          technical_name: Acetaldehyde ammonia
+                          proper_shipping_name: Acetaldehyde ammonia
+                          packing_group: III
+                          quantity: 2
+                          UOM: g
+                      shipped_under_DOT_as: Excepted Quantity
+                      shipped_under_IATA_as: Excepted Quantity
+                      shipped_under_IMDG_code_as: Excepted Quantity
+      responses:
+        '200':
+          description: Successful catalog entry update.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+              examples:
+                missingField:
+                  summary: The request omitted a required field.
+                  value:
+                    message: Validation Failed
+                    errors:
+                      - field: title
+                        code: missing_field
+                        message: >-
+                          title : missing_field : did not contain a required
+                          property of 'title'
+                invalidType:
+                  summary: The request contained a field with an invalid type.
+                  value:
+                    message: Validation Failed
+                    errors:
+                      - field: title
+                        code: invalid_type
+                        message: >-
+                          title : invalid_type : field did not match the
+                          following type: string
+                invalid:
+                  summary: The request a field with an invalid constraint.
+                  value:
+                    message: Validation Failed
+                    errors:
+                      - field: sku
+                        code: invalid
+                        message: 'field violated a constraint: minLength = 1'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'

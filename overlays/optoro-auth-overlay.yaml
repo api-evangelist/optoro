@@ -1,0 +1,36 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Optoro Auth
+  version: 1.0.0
+extends: openapi/optoro-auth-openapi.yml
+x-provenance:
+  generated: '2026-08-26'
+  method: generated
+  source: https://developer.optoro.com/_spec/openapi/... (harvested 2026-08-26)
+  note: Non-mutating overlay. The harvested specification in openapi/ and openapi/_original/ is untouched; these
+    actions record API Evangelist annotations only.
+actions:
+- target: $.info
+  update:
+    x-apievangelist-provider: optoro
+    x-apievangelist-api-key: auth
+    x-apievangelist-harvested: '2026-08-26'
+    x-apievangelist-source: https://developer.optoro.com/
+    x-apievangelist-spec-version: 1.0.0
+    x-apievangelist-artifacts:
+      authentication: authentication/optoro-authentication.yml
+      conventions: conventions/optoro-conventions.yml
+      errors: errors/optoro-problem-types.yml
+      rate_limits: rate-limits/optoro-rate-limits.yml
+      sandbox: sandbox/optoro-sandbox.yml
+      lifecycle: lifecycle/optoro-lifecycle.yml
+      data_model: data-model/optoro-data-model.yml
+- target: $.info
+  update:
+    x-apievangelist-notes:
+    - Errors are NOT RFC 9457; the envelope is {message, errors[{field, code}]}.
+    - Rate limit is 5000 req/min per IP in production and 2500 in sandbox, signalled by HTTP 429 with no rate-limit
+      headers.
+    - No idempotency key is offered on inbound operations.
+    - Access tokens from https://auth.optiturn.com/oauth/token are valid 25 hours and shared across every Optoro
+      API.

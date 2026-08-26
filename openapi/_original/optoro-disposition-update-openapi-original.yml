@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: Disposition Update
+  version: 1.0.0
+  contact:
+    name: Fulfillment
+  description: >
+    ## Introduction
+
+    The Disposition Update API is used to communicate to the client a change in
+    state/disposition, of a unit as it moves through the ROP and is placed in
+    its next possible value disposition.  For example, an unused, open box unit
+    changing state from Return to Vendor to being Return to Stock as a new
+    disposition due to Return to Vendor quotas being exceeded for that unit
+    type.
+
+    ## Failure Handling
+
+    <p>When Optoro receives a 401 HTTP status, Optoro will request a new
+    Authentication Token from the client’s services and retry the request.</p>
+    <p>When Optoro receives any other error (as described above and identified
+    by a 4xx (not 401) or 5xx range http status code) Optoro will retry five
+    times with the same message.  The retries will happen at an exponential
+    backoff cadence in order not to overload machines.  If the failure persists,
+    the message will be stored in a failure queue and Optoro will have a
+    technical contact person reach out to client tech support to report a
+    problem.  When the problem has been resolved, Optoro can manually retry
+    failed requests.</p> <p>For Disposition Update acknowledgement, all errors
+    are handled the same since this is not in a user facing flow.  However, the
+    differentiation of status codes will help Optoro when reporting an
+    issue.</p>
+servers:
+  - url: https://developer.optoro.com
+paths:
+  /dispositions:
+    post:
+      summary: POST a unit's disposition update
+      operationId: dispositions
+      description: >
+        Client endpoint to which disposition update data is posted to.
+
+        <br>This endpoint along with any authentication mechanisms needed must
+        be communicated to client's account manager.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispositionPayload'
+      responses:
+        '200':
+          description: >-
+            Success. Optoro recommends client APIs respond with a
+            JSON-structured object. This is used for debugging purposes only so
+            this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+components:
+  schemas:
+    DispositionPayload:
+      type: object
+      description: Disposition Update Data
+      properties:
+        from_disposition:
+          type: string
+          description: >-
+            Indicates which channel this unit is from. Options include: b2b,
+            d2c, client_liquidation, destroy, dispose, donate, outlets, recycle,
+            removed, rts, rts_drop_ship, rtv, stock_transfer
+          example: needs_testing
+        to_disposition:
+          type: string
+          description: >-
+            Indicates which channel this unit is designated to.  Options
+            include: b2b, d2c, client_liquidation,  destroy, dispose, donate,
+            outlets, recycle, removed, rts, rts_drop_ship, rtv, stock_transfer
+          example: recycle
+        timestamp:
+          type: string
+          description: iso8601 formatted date string (YYYY-MM-DDT00:00:00) in UTC
+          example: '2018-03-20T00:00:00'
+        location_identifier:
+          type: string
+          description: >-
+            Shared storage location identifier (present in both Optoro  and
+            client’s system) representing the units current location
+          example: RTS-1112
+        warehouse_identifier:
+          type: string
+          description: >-
+            Indicates the warehouse where the unit is located. Identifier can be
+            configured by the client; otherwise will default to Optoro’s
+            internal warehouse identifier
+          example: '22'
+        optiturn_lp:
+          type: string
+          description: Unique alphanumeric id of the unit
+          example: LPAA1234567
+        program_identifier:
+          type: string
+          description: >-
+            Either a client-provided program name or OptiTurn’s internal program
+            id
+          example: parcel_returns
+        from_sku:
+          type: string
+          description: >-
+            Indicates the client SKU associated with the unit before a change -
+            will be the same as to_sku if the unit didn’t change SKU
+          example: '012344566700'
+        to_sku:
+          type: string
+          description: >-
+            Indicates the client SKU associated with the unit after the change -
+            will be the same as from_sku if the unit didn’t change SKU
+          example: '012344566700'
+        sku:
+          type: string
+          description: >-
+            This field is deprecated and may be removed in a future version of
+            the API. Please use from_sku and to_sku above instead
+          example: '012344566700'
+        upc:
+          type: string
+          description: UPC for the unit
+          example: '0123456789012'
+        from_condition:
+          type: string
+          description: >-
+            [N, TT, R, A, B, C, X] indicating which condition the unit was
+            before its new disposition, a condition mapping is often created to
+            match your internal conditions
+          enum:
+            - 'N'
+            - TT
+            - R
+            - A
+            - B
+            - C
+            - X
+          example: 'N'
+        to_condition:
+          type: string
+          description: >-
+            [N, TT, R, A, B, C, X] indicating which condition the unit is at its
+            new disposition, a condition mapping is often created to match your
+            internal conditions
+          enum:
+            - 'N'
+            - TT
+            - R
+            - A
+            - B
+            - C
+            - X
+          example: TT
+        reference_unit_identifier:
+          type: string
+          description: >-
+            A client-provided identifier for the unit, likely provided by an
+            inbound integration
+          example: Unit A
+        store_identifier:
+          type: string
+          description: The identifier of the store that returned the unit to the warehouse
+          example: Store A
+        user_login:
+          type: string
+          description: >-
+            OptiTurn username of the user that triggered the disposition change.
+            Only included for client users, not 3PL
+          example: client_user_login
+      additionalProperties: false
+      required:
+        - from_disposition
+        - to_disposition
+        - timestamp
+        - location_identifier
+        - warehouse_identifier
+        - optiturn_lp
+        - program_identifier
+        - upc
+        - from_condition
+        - to_condition
+    ValidationFailure:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+              - field
+              - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                  - missing_field
+                  - invalid_type
+                  - invalid
+  responses:
+    BadRequest:
+      description: Bad Request
+    Unauthorized:
+      description: >-
+        Not Authorized. A new authentication token will be requested from the
+        client's services and the request will be retried.
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable

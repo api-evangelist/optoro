@@ -1,0 +1,520 @@
+openapi: 3.0.3
+info:
+  title: Inbound Advance Shipping Notice API
+  description: >-
+    The Inbound Advance Shipping Notice API allows clients to notify our system
+    when a shipment is inbound. The data sent will be used to receive and
+    reconcile against.
+  version: 1.0.0
+  contact:
+    name: Receiving
+servers:
+  - url: https://asn.optiturn.com
+    description: Production
+  - url: https://asn.sandbox.optiturn.com
+    description: Sandbox
+  - url: https://asn.stage.optiturn.com
+    description: Staging
+components:
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AdvanceShipNotice:
+      required:
+        - program_identifier
+        - from
+        - to
+        - asn_number
+        - status
+        - details_type
+        - cartons
+      properties:
+        program_identifier:
+          type: string
+          example: consumer_returns
+          description: >-
+            Identifies which program this ASN belongs to for operational
+            processes, financials and reporting. The value will be provided by
+            Optoro during implementation.
+        from:
+          type: object
+          $ref: '#/components/schemas/From'
+          description: The location this ASN is being sent from.
+        to:
+          type: object
+          $ref: '#/components/schemas/To'
+          description: The location this ASN is being sent to.
+        asn_number:
+          type: string
+          example: SO00001234
+          description: >-
+            A reference number for this ASN, typically this is an RMA Number or
+            Transfer Number. This must be unique per program identifier. This is
+            a scannable identifier in Receiving.
+        shipment_identifier:
+          type: string
+          example: SI1ZAAAAAAZZ97764680
+          description: >-
+            A reference number which may be used to identify multiple ASNs which
+            were created against a single Order, RMA, or Transfer. This may be
+            the `order_identifier`, the PO Number or the RMA Number. This is a
+            scannable identifier in Receiving.
+        tracking_number:
+          type: string
+          example: 1Z123123123123
+          description: >-
+            The tracking number or BOL for the shipment. This is a scannable
+            identifier in Receiving.
+        carrier:
+          type: string
+          example: UPS
+          description: The carrier for the shipment.
+        ship_date:
+          type: string
+          format: date-time
+          example: '2019-03-15T00:00:00Z'
+          description: >-
+            An iso8601 formatted date string representing when the ASN was or
+            will be shipped (YYYY-MM-DDT00:00:00). This value can be updated
+            using the ASN update endpoint.
+        status:
+          type: string
+          enum:
+            - pending
+            - shipped
+            - delivered
+            - cancelled
+          example: shipped
+          description: >-
+            This value can be updated using the update endpoint. Cancelled
+            status will block receiving. *Note passing 'canceled' with one 'l'
+            will not be recognized by our system.
+        details_type:
+          type: string
+          enum:
+            - unit
+            - sku
+          example: unit
+          description: >
+            - 'unit': `details.unit_identifier` must be provided and other per
+            unit keys are allowed.
+
+            - 'sku': `details.sku` and `details.quantity` keys required, per
+            unit keys disallowed.
+
+            Only one type is allowed to make matching during receiving
+            manageable.
+        asn_type:
+          type: string
+          example: MR
+          description: >-
+            Optional, the type of ASN. Blanket type ASNs remove validations
+            around units and overages.
+        cartons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Carton'
+          description: >-
+            Each object (carton) below represents a single box or pallet which
+            has been shipped.
+        messagetimestamp:
+          type: string
+          format: date-time
+          example: '2019-10-16T10:59:20'
+          description: Optional, a timestamp denoting when the ASN message was sent.
+    From:
+      required:
+        - identifier
+        - type
+      properties:
+        identifier:
+          type: string
+          example: 22
+          description: >-
+            Identifier for the from location visible in reporting. ie Numeric
+            Warehouse ID, Store Number, Ecom
+        type:
+          type: string
+          example: Warehouse
+          description: >-
+            Type of the from location visible in reporting. ie Warehouse, Ecom,
+            Returns Portal, Store
+    To:
+      required:
+        - identifier
+        - type
+      properties:
+        identifier:
+          type: string
+          example: 1352
+          description: >-
+            Identifier for the to location visible in reporting. ie Numeric
+            Warehouse ID, Store Number.
+        type:
+          type: string
+          example: Store
+          description: >-
+            Type of the to location visible in reporting. ie Warehouse, Store,
+            Customer
+    Carton:
+      required:
+        - details
+      properties:
+        identifier:
+          type: string
+          example: CTAA1234567
+          description: >-
+            The scannable identifier for this carton which may be used in
+            Receiving.
+        reference:
+          type: object
+          $ref: '#/components/schemas/Reference'
+          description: >-
+            Reference to a StockTransferOrder, RMA or ForwardOrder with
+            additional information used for receiving and reconciling this ASN.
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Detail'
+          description: The sku or unit lines expected in this carton.
+    Reference:
+      properties:
+        type:
+          type: string
+          enum:
+            - StockTransferOrder
+            - RA
+            - RMA
+            - ForwardOrder
+            - ReturnsPortalOrder
+          example: RMA
+          description: Reference type.
+        identifier:
+          type: string
+          example: 12345
+          description: >-
+            Reference identifier, used with `reference.type` to find the
+            reference during receiving. This is a scannable identifier in
+            Receiving.
+        alternate_identifier:
+          type: string
+          example: OR12345678
+          description: >-
+            Reference alternate identifier, should be scannable, used to locate
+            the reference during receiving if the main identifier isn't always
+            physically on the carton.
+    Detail:
+      required:
+        - line_identifier
+        - sku
+        - quantity
+      properties:
+        line_identifier:
+          type: string
+          example: 123456789
+          description: >-
+            The systematic identifier for this line. For ecommerce parcel
+            returns, this is typically the RMA line identifier or order line
+            identifier. For Wholesale or Store returns this might be a specific
+            identifier for the shipment line or you can pass '1' for the first
+            line and then increment by '1' per additional line.
+        unit_identifier:
+          type: string
+          example: 123456891011
+          description: >-
+            If the `details_type` is 'unit', this attribute denotes the
+            scannable identifier for this unit, which can be, used to match to
+            the `details.line_identifier` during receiving. This value needs to
+            be unique across all ASNs provided by the customer to Optoro.
+        reference_line_identifier:
+          type: string
+          example: 1
+          description: >-
+            This is an optional field for any additional scannable identifiers
+            that could be on the line item that Optoro will match to the
+            `details.line_identifier` during receiving. This could be used if
+            there is a separate barcode on the product that is not a SKU or UPC
+            barcode.
+        sku:
+          type: string
+          example: S123456
+          description: >-
+            The SKU for this item. Can be used to match to the
+            `details.line_identifier` during receiving.
+        upc:
+          type: string
+          example: 12345678905
+          description: >-
+            The UPC for this item. Only allows letters and numbers, whitespaces
+            are not allowed.
+        quantity:
+          type: integer
+          example: 1
+          description: >-
+            For unit type ASNs, this must be 1. For sku type ASNs, the number of
+            items for this sku in this carton.
+        vendor_identifier:
+          type: string
+          example: vnd_3001
+          description: >-
+            The identifier for this unit or SKU/quantity's vendor or supplier.
+            This field is required if using Optoro's RTV Module. It is used for
+            determining RTV eligibility and fulfillment.
+        serial_number:
+          type: string
+          example: 12345689
+          description: >-
+            Serial number for this unit. Only permitted on Unit type ASNs. Can
+            be used to match to the details.line_identifierline during
+            receiving. Only allows letters and numbers, whitespaces are not
+            allowed.
+        condition:
+          type: string
+          example: 'N'
+          description: >-
+            Optional field denoting the condition of the product as reported by
+            the transferring location. This will appear in Optoro's inbound and
+            received shipments reporting.
+        eligibility_flags:
+          type: array
+          items:
+            type: string
+            example:
+              - personalized
+          description: >-
+            Optional array identifying specific flags about a unit used to
+            determine eligibility for RTV. If one of these flags is present on
+            the ASN and the vendor in Optoro's Vendor Management module has this
+            flag 'checked' then the unit will be blocked from RTV.
+        sell_date:
+          type: string
+          format: date-time
+          example: '2021-01-10T00:00:00Z'
+          description: >-
+            Valid for unit type ASNs. An iso8601 formatted date string
+            representing when the detail line was sold. Used for eligibility and
+            dispositioning.
+        return_date:
+          type: string
+          format: date-time
+          example: '2021-01-10T00:00:00Z'
+          description: >-
+            Valid for unit type ASNs. An iso8601 formatted date string
+            representing when the detail line was returned.
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          description: >-
+            Optional object array, used for customers to pass up to two specific
+            values they want printed on labels at receiving or in the OptiTurn
+            Rework Tool. This can be a barcode or a custom string. Currently
+            only two values can be supported on the label print. Customers must
+            be using version 2 of the API for this field.
+        merchant:
+          type: string
+          example: Best Buy
+          description: >-
+            The name of the merchant that sells the product. This field is
+            required when a customer is processing returns for multiple
+            merchants. It is used to uniquely identify the product when there is
+            SKU or UPC overlap between merchants.
+        concept:
+          type: string
+          example: Insignia
+          description: >-
+            The retail 'concept' or 'brand' to which the product belongs. This
+            differentiates similar products when the customer's parent company
+            has multiple retail brands. It is used to uniquely identify the
+            product when there is SKU or UPC overlap within the same merchant.
+        asin:
+          type: string
+          example: 1234567890
+          description: >-
+            A 10-character alphanumeric unique identifier assigned to a product
+            by Amazon.com and its partners. If there is a scannable ASIN on the
+            unit of inventory this can be used to match to the
+            `details.line_identifier`.
+        return_reason:
+          type: string
+          example: Wrong Item Sent
+          description: >-
+            This field can be used to identify a line item as a 'misship'. Your
+            onboarding team can configure a setting to receive a unit with a
+            SKU/UPC that is in your catalog but that does not match the ASN line
+            if the 'misship' value is present. This value will be provided in
+            the Inventory Receipt `details.return_reason` field.
+        set_identifier:
+          type: string
+          example: SET-S123456
+          description: >-
+            Optional field to group the items. This field is applicable only
+            when the `details_type` is 'unit'.
+    Label:
+      required:
+        - type
+        - name
+        - value
+      properties:
+        type:
+          type: string
+          enum:
+            - barcode
+            - text
+          example: text
+          description: >-
+            This indicates whether the field printed on the label should be text
+            or a barcode. Allowed values - 'barcode' and 'text'.
+        name:
+          type: string
+          example: title
+          description: >-
+            This is the title of the field being printed. It is always readable
+            as text. For example, if you want to print a SKU barcode on the
+            label you can pass the SKU string in this field and the barcode in
+            `label.value` field. Alternatively if you want to print the size of
+            the product you should pass 'size' in this field and the size of the
+            product (such as 'medium') in the `label.value` field.
+        value:
+          type: string
+          example: Printing this title
+          description: >-
+            The corresponding value of the `label.name`. If 'barcode' is passed
+            in `label.type` then the value will always be printed as a barcode.
+security:
+  - jwtAuth: []
+paths:
+  /asns:
+    post:
+      summary: Create an ASN
+      parameters:
+        - name: api-version
+          in: header
+          description: >-
+            There are currently two supported versions of the Inbound Advance
+            Shipping Notice API. Version 2 adds support for the `details.labels`
+            array. By default requests to the Inbound Advance Shipping Notice
+            API will use version 1. To explicitly set which version of the API
+            to use clients must set the api-version HTTP header.
+          required: true
+          schema:
+            type: string
+            enum:
+              - 1
+              - 2
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvanceShipNotice'
+      responses:
+        '202':
+          description: >-
+            The ASN API will return a HTTP status code 202 to indicate that the
+            request was processed successfully and that the provided ASN is
+            queued for creation.
+        '400':
+          description: >-
+            Error response will be HTTP status code 400 for other
+            bad/unparseable requests.
+        '401':
+          description: >-
+            Error response will be HTTP status code 401 for missing or bad
+            api_key (these have no body).
+        '422':
+          description: >-
+            Error response will be HTTP status code 422 for validation errors
+            (missing or invalid fields in this case).
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Validation Failed
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                          example: reference_number
+                        code:
+                          type: string
+                          example: missing_field
+  /asns/{asn-number}:
+    put:
+      summary: Update an ASN
+      description: >-
+        ASNs may be updated to change the status of the ASN overall or the
+        status of a detail line. See above for permitted status values. ASN
+        Number should be included as part of the url. ASNs can be updated only
+        when they are active and have no receptions.
+      parameters:
+        - name: api-version
+          in: header
+          description: >-
+            There are currently two supported versions of the Inbound Advance
+            Shipping Notice API. Version 2 adds support for the `details.labels`
+            array. By default requests to the Inbound Advance Shipping Notice
+            API will use version 1. To explicitly set which version of the API
+            to use clients must set the api-version HTTP header.
+          required: true
+          schema:
+            type: string
+            enum:
+              - 1
+              - 2
+            example: 1
+        - name: asn-number
+          in: path
+          required: true
+          schema:
+            type: string
+            example: SO00001234
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvanceShipNotice'
+      responses:
+        '202':
+          description: >-
+            The ASN API will return a HTTP status code 202 to indicate that the
+            request was processed successfully and that the provided ASN is
+            queued for creation.
+        '400':
+          description: >-
+            Error response will be HTTP status code 400 for other
+            bad/unparseable requests.
+        '401':
+          description: >-
+            Error response will be HTTP status code 401 for missing or bad
+            api_key (these have no body).
+        '422':
+          description: >-
+            Error response will be HTTP status code 422 for validation errors
+            (missing or invalid fields in this case).
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Validation Failed
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                          example: reference_number
+                        code:
+                          type: string
+                          example: missing_field

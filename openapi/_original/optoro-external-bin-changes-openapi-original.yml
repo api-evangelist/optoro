@@ -1,0 +1,354 @@
+openapi: 3.0.3
+info:
+  title: External Bin Changes
+  description: This is a unified, external API for unit and location bin changes.
+  version: 2023-05-01 r1
+servers:
+  - url: https://sandbox.optiturn.com
+    description: Sandbox
+  - url: https://optiturn.com
+    description: Production
+paths:
+  /external_bin_changes:
+    post:
+      summary: Perform a bin-change for a unit or a location.
+      description: >
+        Performs a bin-change for a unit (identified by its LP) or a location
+        (identified by its name). This will move
+
+        the unit/location from its current location into another location.
+      operationId: createExternalBinChange
+      parameters:
+        - $ref: '#/components/parameters/OptiturnExternalBinChangesVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/UnitBinChange'
+                - $ref: '#/components/schemas/LocationBinChange'
+            examples:
+              createExternalUnitBinChangeRequestExample:
+                summary: Unit bin change request
+                description: >-
+                  Moves unit `LPCN786457` from its current location to
+                  `CA-TN-0001`.
+                value:
+                  location_id: CA-TN-0001
+                  id: LPCN786457
+              createExternalLocationBinChangeRequestExample:
+                summary: Location bin change request
+                description: >-
+                  Moves location `TOC-TN-0001` from its current location to
+                  `CA-TN-0001`.
+                value:
+                  location_id: CA-TN-0001
+                  id: TOC-TN-0001
+      responses:
+        '201':
+          description: The bin-change was performed successfully.
+          headers:
+            Optiturn-External-Bin-Changes-Version:
+              $ref: '#/components/headers/Optiturn-External-Bin-Changes-Version'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnitBinChange'
+                  - $ref: '#/components/schemas/LocationBinChange'
+              examples:
+                createExternalUnitBinChangeResponseExample:
+                  summary: Unit bin change response
+                  description: Moved unit `LPCN786457` to `CA-TN-0001`.
+                  value:
+                    location_id: CA-TN-0001
+                    id: LPCN786457
+                createExternalLocationBinChangeResponseExample:
+                  summary: Location bin change response
+                  description: Moved location `TOC-TN-0001` to `CA-TN-0001`.
+                  value:
+                    location_id: CA-TN-0001
+                    id: TOC-TN-0001
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      security:
+        - optoro_auth:
+            - write:external_bin_changes
+            - read:external_bin_changes
+  /external_bin_changes/{id}:
+    get:
+      summary: >-
+        Show information that is relevant for bin-changing of a unit or
+        location.
+      description: >
+        Shows unit-level and location-level information of the item that should
+        be bin-changed, most importantly
+
+        information about the directed sorting zone and slot for units.
+      operationId: showExternalBinChange
+      parameters:
+        - name: id
+          in: path
+          description: The identifier of a unit or location
+          required: true
+          schema:
+            oneOf:
+              - type: string
+                example: LPCN786457
+              - type: string
+                example: TOC-TN-0001
+        - $ref: '#/components/parameters/OptiturnExternalBinChangesVersion'
+      responses:
+        '200':
+          description: Bin-change information
+          headers:
+            Optiturn-External-Bin-Changes-Version:
+              $ref: '#/components/headers/Optiturn-External-Bin-Changes-Version'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unit'
+                  - $ref: '#/components/schemas/Location'
+              examples:
+                showExternalUnitBinChangeResponseExample:
+                  summary: An example of a unit bin change response
+                  value:
+                    type: unit
+                    title: Lightweight Down Puffer Jacket
+                    image_url: /images/no_image.png
+                    id: LPCN786457
+                    sku: LB23351-GMA01-650
+                    upc: OID645440561
+                    directed_sorting:
+                      zone: RTS-SORT
+                      slot: RTS-SORT-SL1
+                showExternalLocationBinChangeResponseExample:
+                  summary: An example of a location bin change response
+                  value:
+                    type: location
+                    id: TOC-TN-0001
+                    items:
+                      - type: unit
+                        title: Lightweight Down Puffer Jacket
+                        image_url: /images/no_image.png
+                        id: LPCN786457
+                        sku: LB23351-GMA01-650
+                        upc: OID645440561
+                        directed_sorting:
+                          zone: BULK-SORT
+                          slot: BULK-SORT-SL1
+                      - type: unit
+                        title: Lightweight Hiking Pants
+                        image_url: /images/no_image.png
+                        id: LPCN786458
+                        sku: LB23351-PPR01-120
+                        upc: OID645440562
+                        directed_sorting:
+                          zone: BULK-SORT
+                          slot: BULK-SORT-SL2
+                showExternalUnitBinChangeResponseExampleUnitInUnitFulfilledChannel:
+                  summary: >-
+                    An example of a unit bin change response with a unit
+                    fulfilled channel
+                  value:
+                    type: unit
+                    title: Lightweight Down Puffer Jacket
+                    image_url: /images/no_image.png
+                    id: LPCN786457
+                    sku: LB23351-GMA01-650
+                    upc: OID645440561
+                    directed_sorting:
+                      zone: unit_fulfilled
+                      slot: unit_fulfilled
+                showExternalUnitBinChangeResponseExampleContainerInUnitFulfilledChannel:
+                  summary: >-
+                    An example of a Container bin change response with a unit
+                    fulfilled channel
+                  value:
+                    type: location
+                    id: TOC-TN-0001
+                    items:
+                      - type: unit
+                        title: Lightweight Down Puffer Jacket
+                        image_url: /images/no_image.png
+                        id: LPCN786457
+                        sku: LB23351-GMA01-650
+                        upc: OID645440561
+                        directed_sorting:
+                          zone: unit_fulfilled
+                          slot: unit_fulfilled
+                      - type: unit
+                        title: Lightweight Hiking Pants
+                        image_url: /images/no_image.png
+                        id: LPCN786458
+                        sku: LB23351-PPR01-120
+                        upc: OID645440562
+                        directed_sorting:
+                          zone: unit_fulfilled
+                          slot: unit_fulfilled
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      security:
+        - optoro_auth:
+            - write:external_bin_changes
+            - read:external_bin_changes
+components:
+  headers:
+    Optiturn-External-Bin-Changes-Version:
+      description: Version of the External Bin Changes API
+      schema:
+        type: string
+        enum:
+          - '2023-05-01'
+  parameters:
+    OptiturnExternalBinChangesVersion:
+      name: Optiturn-External-Bin-Changes-Version
+      in: header
+      description: Version of the External Bin Changes API
+      schema:
+        type: string
+        enum:
+          - '2023-05-01'
+      required: true
+  schemas:
+    UnitBinChange:
+      type: object
+      properties:
+        id:
+          type: string
+          description: LP of a unit
+          example: LPCN786457
+        location_id:
+          type: string
+          description: Name of a location
+          example: CA-TN-0001
+    LocationBinChange:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Name of a location
+          example: TOC-TN-0001
+        location_id:
+          type: string
+          description: Name of a location
+          example: CA-TN-0001
+    Unit:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - unit
+          example: unit
+        title:
+          type: string
+          description: Description of the unit's product
+          example: Lightweight Down Puffer Jacket
+        image_url:
+          type: string
+          description: URL of an image of the unit
+          example: /images/no_image.png
+        id:
+          type: string
+          description: LP of the unit
+          example: LPCN786457
+        sku:
+          type: string
+          description: SKU of the unit
+          example: LB23351-GMA01-650
+        upc:
+          type: string
+          description: The UPC of the unit
+          example: OID645440561
+        directed_sorting:
+          type: object
+          properties:
+            zone:
+              type: string
+              description: Designated directed sorting zone for the unit
+              example: RTS-SORT
+            slot:
+              type: string
+              description: Designated directed sorting slot for the unit
+              example: RTS-SORT-SL1
+    Location:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - location
+          example: location
+        id:
+          type: string
+          description: Name of the location
+          example: TOC-TN-0001
+        items:
+          type: array
+          description: Items contained in this location
+          items:
+            $ref: '#/components/schemas/Unit'
+  responses:
+    BadRequest:
+      description: >-
+        The server cannot process the request due to a client error. Check the
+        message and detail fields for further information.
+      headers:
+        Optiturn-External-Bin-Changes-Version:
+          $ref: '#/components/headers/Optiturn-External-Bin-Changes-Version'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: A message summarizing the error.
+                example: |
+                  Invalid unit ID or location ID 'TO-123'.
+          examples:
+            identifierNotFound:
+              value:
+                error: Invalid unit ID or location ID 'TO-123'.
+            locationNotMovable:
+              value:
+                error: Location 'CONVEYOR' cannot be moved.
+    Unauthorized:
+      description: |
+        Missing, expired, or invalid OAuth bearer token. Request a new token
+        from the auth service.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Not Authorized
+    InternalServerError:
+      description: An internal error occured. Please contact Optoro for further guidance.
+    ServiceUnavailable:
+      description: Service is unavailable and/or over capacity. Please try again later.
+    GatewayTimeout:
+      description: Service is over capacity. Please try again later.
+  securitySchemes:
+    optoro_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
