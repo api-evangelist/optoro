@@ -40,237 +40,540 @@ tags_raw:
 - webhooks
 - order-management
 apis:
-- name: Optoro Auth API
-  description: OAuth 2.0 client-credentials token endpoint for every Optoro API. Exchanges the client_id and client_secret
-    issued by Optoro's Client Success team for a bearer access token valid 25 hours (90000 seconds) with scope "read
-    write". The same token is accepted across all Optoro APIs.
+- aid: optoro:optoro-asns-api
+  name: Optoro Asns API
+  description: The Asns API from Optoro — 2 operation(s) for asns.
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
-  - Authentication
-  - OAuth
-  - Returns Management
+  - Asns
   properties:
   - type: OpenAPI
-    url: openapi/optoro-auth-openapi.yml
+    url: openapi/optoro-asns-api-openapi.yml
   - type: Documentation
     url: https://developer.optoro.com/content/api_overview
   - type: Authentication
     url: authentication/optoro-authentication.yml
-  - type: Overlay
-    url: overlays/optoro-auth-overlay.yaml
-  tags_raw:
-  - authentication
-  - oauth
-  - returns-management
-- name: Optoro Catalogs API
-  description: Product master data feed. POST /catalog_entry_updates upserts a catalog entry — SKU, title, imagery, GS1
-    UPC/ASIN product identifiers, allowed and disallowed resale channels, and configurable custom fields — which Optoro
-    then uses to disposition, route and price returned units. Version 2023-08-01.
-  humanURL: https://developer.optoro.com/openapi/catalogs/openapi
-  baseURL: https://catalogs.optiturn.com
-  tags:
-  - Returns Management
-  - Retail
-  - Inventory
-  - Product Data
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-catalogs-openapi.yml
   - type: Documentation
     url: https://developer.optoro.com/content/rm_integration_guide
-  - type: Overlay
-    url: overlays/optoro-catalogs-overlay.yaml
-  tags_raw:
-  - returns-management
-  - retail
-  - inventory
-  - product-data
-- name: Optoro Facilities API
-  description: Create or update the stores and warehouses in a retailer’s returns network so units can be received, dispositioned
-    and moved against a known location. Single upsert operation, version 2024-08-08, OAuth 2.0 client credentials.
-  humanURL: https://developer.optoro.com/openapi/facilities/openapi
-  baseURL: https://facilities.optiturn.com
-  tags:
-  - Returns Management
-  - Supply Chain
-  - Retail
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-facilities-openapi.yml
-  - type: Overlay
-    url: overlays/optoro-facilities-overlay.yaml
-  tags_raw:
-  - returns-management
-  - supply-chain
-  - retail
-- name: Optoro RTV Vendor API
-  description: Return-to-vendor agreements. POST /vendor_updates creates or updates a vendor and the policy terms that
-    govern which returned units are routed back to that vendor rather than resold, refurbished or liquidated. Version
-    2.0.0.
-  humanURL: https://developer.optoro.com/openapi/rtv/openapi
-  baseURL: https://rtv.optiturn.com
-  tags:
-  - Reverse Logistics
-  - Supply Chain
-  - Vendor Management
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-rtv-openapi.yml
-  - type: Overlay
-    url: overlays/optoro-rtv-overlay.yaml
-  tags_raw:
-  - reverse-logistics
-  - supply-chain
-  - vendor-management
-- name: Optoro Inbound ASN API
-  description: Advance shipping notices for returns and stock moving into an Optoro facility. POST /asns creates an ASN
-    carrying carrier, tracking number, ship date, origin and destination plus cartons and their line details (SKU, UPC,
-    ASIN, condition, quantity, return reason, unit identifier); PUT /asns/{asn-number} amends it by natural key.
-  humanURL: https://developer.optoro.com/openapi/asn/openapi
-  baseURL: https://asn.optiturn.com
-  tags:
-  - Reverse Logistics
-  - Supply Chain
-  - Fulfillment
-  - Inventory
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-asn-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-inventory-receipt-openapi.yml
-  - type: Overlay
-    url: overlays/optoro-asn-overlay.yaml
-  tags_raw:
-  - reverse-logistics
-  - supply-chain
-  - fulfillment
-  - inventory
-- name: Optoro External Bin Changes API
-  description: Unified external API for unit and location bin changes inside an Optoro warehouse. The only Optoro surface
-    publishing both a write and a read-back operation (createExternalBinChange / showExternalBinChange), scoped write:external_bin_changes
-    and read:external_bin_changes. Version 2023-05-01 r1.
-  humanURL: https://developer.optoro.com/openapi/external_bin_changes/openapi
-  baseURL: https://optiturn.com
-  tags:
-  - Reverse Logistics
-  - Inventory
-  - Supply Chain
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-external-bin-changes-openapi.yml
   - type: OAuthScopes
     url: scopes/optoro-scopes.yml
-  - type: Overlay
-    url: overlays/optoro-external-bin-changes-overlay.yaml
-  tags_raw:
-  - reverse-logistics
-  - inventory
-  - supply-chain
-- name: Optoro Drop Ship API
-  description: Fulfil orders directly from returned and excess units and lots held in the Optoro RMS. Twelve operations
-    across listings (index, show, update quantity), orders (index, show, create, batch create, update, cancel) and shipments
-    (index, show, show-by-order). Cancellation is available only while an order is in pending_payment. Version 6.0, OAuth
-    2.0 client credentials, page/per_page pagination.
-  humanURL: https://developer.optoro.com/openapi/drop_ship/openapi
-  baseURL: https://drop-ship.optiturn.com
-  tags:
-  - Drop Ship
-  - Fulfillment
-  - Order Management
-  - eCommerce
-  - Retail
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-drop-ship-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-drop-ship-webhooks-openapi.yml
   - type: Webhooks
     url: asyncapi/optoro-webhooks.yml
-  - type: AgentSkill
-    url: skills/optoro-drop-ship-order.md
-  - type: Overlay
-    url: overlays/optoro-drop-ship-overlay.yaml
-  tags_raw:
-  - drop-ship
-  - fulfillment
-  - order-management
-  - ecommerce
-  - retail
-- name: Optoro Returns Portal Orders API
-  description: Retailers POST a full snapshot of each order — order, items, customer, refunds, discounts — to Optoro
-    at the first shipped event and again on every lifecycle change, which is what the shopper sees when initiating a
-    return in the Optoro returns portal. Version 3.0.0.
-  humanURL: https://developer.optoro.com/openapi/returns_portal_orders/openapi
-  baseURL: https://orders.optiturn.com
-  tags:
-  - Returns Management
-  - eCommerce
-  - Retail
-  - Order Management
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-returns-portal-orders-openapi.yml
   - type: Documentation
     url: https://developer.optoro.com/content/rx_integration_guide
-  - type: AgentSkill
-    url: skills/optoro-returns-experience.md
-  - type: Overlay
-    url: overlays/optoro-returns-portal-orders-overlay.yaml
-  tags_raw:
-  - returns-management
-  - ecommerce
-  - retail
-  - order-management
-- name: Optoro Event Webhooks and Customer Endpoints
-  description: 'Ten Optoro-to-customer message contracts published as OpenAPI: the RMAs webhook (return initiated, tracking
-    issued, carrier scan, drop-off, warehouse receipt, refund posted), Disposition Update, Final Disposition, Outbound
-    ASN, and Drop Shipment confirmation / cancellation / partial cancellation; plus three ''customer endpoints'' whose
-    response Optoro acts on — Exchange Orders (idempotent on original_order_id), Exchange Variants, and the deprecated
-    Forward Orders. Delivery is at-least-once and unordered, retried with exponential backoff for up to 32 hours, retained
-    30 days. servers[] names developer.optoro.com as a documentation placeholder because the real target URL is the integrator''s
-    own host.'
-  humanURL: https://developer.optoro.com/content/webhooks
-  baseURL: https://developer.optoro.com
-  tags:
-  - Webhooks
-  - Returns Management
-  - Reverse Logistics
-  - eCommerce
-  - Fulfillment
-  properties:
-  - type: Webhooks
-    url: asyncapi/optoro-webhooks.yml
-  - type: OpenAPI
-    url: openapi/optoro-rmas-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-disposition-update-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-final-disposition-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-outbound-asn-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-exchange-orders-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-variants-openapi.yml
-  - type: OpenAPI
-    url: openapi/optoro-forward-orders-openapi.yml
   - type: Documentation
     url: https://developer.optoro.com/content/webhooks
-  - type: Overlay
-    url: overlays/optoro-rmas-overlay.yaml
-  tags_raw:
-  - webhooks
-  - returns-management
-  - reverse-logistics
-  - ecommerce
-  - fulfillment
+- aid: optoro:optoro-catalog-entry-updates-api
+  name: Optoro Catalog Entry Updates API
+  description: The Catalog Entry Updates API from Optoro — 1 operation(s) for catalog entry updates.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Catalog Entry Updates
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-catalog-entry-updates-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-dispositions-api
+  name: Optoro Dispositions API
+  description: The Dispositions API from Optoro — 1 operation(s) for dispositions.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Dispositions
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-dispositions-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-drop-shipment-cancellation-api
+  name: Optoro Drop Shipment Cancellation API
+  description: >-
+    The Drop Shipment Cancellation API from Optoro — 1 operation(s) for drop shipment cancellation.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Drop Shipment Cancellation
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-drop-shipment-cancellation-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-drop-shipment-confirmation-api
+  name: Optoro Drop Shipment Confirmation API
+  description: >-
+    The Drop Shipment Confirmation API from Optoro — 1 operation(s) for drop shipment confirmation.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Drop Shipment Confirmation
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-drop-shipment-confirmation-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-drop-shipment-partial-cancellation-api
+  name: Optoro Drop Shipment Partial Cancellation API
+  description: >-
+    The Drop Shipment Partial Cancellation API from Optoro — 1 operation(s) for drop shipment partial
+    cancellation.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Drop Shipment Partial Cancellation
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-drop-shipment-partial-cancellation-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-exchange-orders-api
+  name: Optoro Exchange Orders API
+  description: The Exchange Orders API from Optoro — 1 operation(s) for exchange orders.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Exchange Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-exchange-orders-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-external-bin-changes-api
+  name: Optoro External Bin Changes API
+  description: The External Bin Changes API from Optoro — 2 operation(s) for external bin changes.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - External Bin Changes
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-external-bin-changes-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-facilities-api
+  name: Optoro Facilities API
+  description: The Facilities API from Optoro — 1 operation(s) for facilities.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Facilities
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-facilities-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-final-dispositions-api
+  name: Optoro Final Dispositions API
+  description: The Final Dispositions API from Optoro — 1 operation(s) for final dispositions.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Final Dispositions
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-final-dispositions-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-forward-orders-api
+  name: Optoro Forward Orders API
+  description: The Forward Orders API from Optoro — 1 operation(s) for forward orders.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Forward Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-forward-orders-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-inventory-receipt-api
+  name: Optoro Inventory Receipt API
+  description: The Inventory Receipt API from Optoro — 1 operation(s) for inventory receipt.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Inventory Receipt
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-inventory-receipt-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-listings-api
+  name: Optoro Listings API
+  description: The Listings API from Optoro — 2 operation(s) for listings.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Listings
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-listings-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-oauth-api
+  name: Optoro OAUTH API
+  description: The Oauth API from Optoro — 1 operation(s) for oauth.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Oauth
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-oauth-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-orders-api
+  name: Optoro Orders API
+  description: The Orders API from Optoro — 3 operation(s) for orders.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-orders-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-outbound-asn-api
+  name: Optoro Outbound Asn API
+  description: The Outbound Asn API from Optoro — 1 operation(s) for outbound asn.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Outbound Asn
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-outbound-asn-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-returns-portal-orders-api
+  name: Optoro Returns Portal Orders API
+  description: The Returns Portal Orders API from Optoro — 1 operation(s) for returns portal orders.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Returns Portal Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-returns-portal-orders-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-rmas-api
+  name: Optoro Rmas API
+  description: The Rmas API from Optoro — 1 operation(s) for rmas.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Rmas
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-rmas-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-shipments-api
+  name: Optoro Shipments API
+  description: The Shipments API from Optoro — 3 operation(s) for shipments.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Shipments
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-shipments-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-sku-api
+  name: Optoro Sku API
+  description: The Sku API from Optoro — 1 operation(s) for sku.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Sku
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-sku-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-vendor-updates-api
+  name: Optoro Vendor Updates API
+  description: The Vendor Updates API from Optoro — 1 operation(s) for vendor updates.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Vendor Updates
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-vendor-updates-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/optoro-auth-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-catalogs-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-facilities-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-rtv-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-asn-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-external-bin-changes-overlay.yaml
+- type: AgentSkill
+  url: skills/optoro-drop-ship-order.md
+- type: AgentSkill
+  url: skills/optoro-returns-experience.md
+- type: Overlay
+  url: overlays/optoro-returns-portal-orders-overlay.yaml
+- type: Overlay
+  url: overlays/optoro-rmas-overlay.yaml
 - type: AgenticAccess
   url: agentic-access/optoro-agentic-access.yml
 - type: VulnerabilityDisclosure
