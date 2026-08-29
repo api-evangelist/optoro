@@ -566,6 +566,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/optoro-capability-edges.yml
+  name: Optoro Business Capability Map
 - type: Overlay
   url: overlays/optoro-auth-overlay.yaml
 - type: Overlay

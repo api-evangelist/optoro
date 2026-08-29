@@ -1,0 +1,73 @@
+slug: optoro
+provider: Optoro
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Transportation & Logistics
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 6
+edges:
+- tag: Dispositions
+  spec_file: optoro-dispositions-api-openapi.yml
+  capability_id: BC-2460.50
+  capability_id_l1: BC-2460
+  capability_name: Returns and Reverse Operations Management
+  confidence: 0.8
+  evidence: '"used to communicate to the client a change in state/disposition, of a unit as it moves through
+    the ROP" ... "POST a unit''s disposition update"'
+  reason: Returns-processing disposition decisions on returned units in the reverse-operations process;
+    matches 'Receipt, triage, and disposition of returned goods and reverse-logistics flows'.
+- tag: Final Dispositions
+  spec_file: optoro-final-dispositions-api-openapi.yml
+  capability_id: BC-2460.50
+  capability_id_l1: BC-2460
+  capability_name: Returns and Reverse Operations Management
+  confidence: 0.8
+  evidence: '"communicate to the client the final state, or disposition, of a unit when it leaves the
+    ROP" ... "POST a unit''s final disposition"'
+  reason: Final disposition outcome of a returned unit in the reverse-logistics process.
+- tag: Inventory Receipt
+  spec_file: optoro-inventory-receipt-api-openapi.yml
+  capability_id: BC-2460.10
+  capability_id_l1: BC-2460
+  capability_name: Inbound Operations Management
+  confidence: 0.78
+  evidence: '"allows clients to be notified when a unit is received into Optiturn against an ASN" ...
+    "Create Inventory Receipt"'
+  reason: Goods receipt against an ASN at the warehouse — inbound warehouse operations.
+- tag: Asns
+  spec_file: optoro-asns-api-openapi.yml
+  capability_id: BC-2460.10
+  capability_id_l1: BC-2460
+  capability_name: Inbound Operations Management
+  confidence: 0.75
+  evidence: allows clients to notify our system when a shipment is inbound. The data sent will be used
+    to receive and reconcile against
+  reason: ASN creation/update feeding warehouse receiving and reconciliation of inbound cartons maps to
+    Inbound Operations Management; slight ambiguity versus manifest documentation, but the stated purpose
+    is receipt.
+- tag: External Bin Changes
+  spec_file: optoro-external-bin-changes-api-openapi.yml
+  capability_id: BC-2460.20
+  capability_id_l1: BC-2460
+  capability_name: Storage and Inventory Operations Management
+  confidence: 0.72
+  evidence: '"Perform a bin-change for a unit or a location." schemas: Location, LocationBinChange, Unit,
+    UnitBinChange'
+  reason: Warehouse bin/location movement of units — in-house storage operations (slotting, location management).
+- tag: Rmas
+  spec_file: optoro-rmas-api-openapi.yml
+  capability_id: BC-2460.50
+  capability_id_l1: BC-2460
+  capability_name: Returns and Reverse Operations Management
+  confidence: 0.7
+  evidence: '"Optoro posts an **RMAs** message to you when the shopper initiates a return" ... "when the
+    carrier receives and scans the return"; schemas rma, rma_item'
+  reason: RMA lifecycle events (return initiation, carrier tracking, receipt scan) are reverse-logistics/returns
+    processing, the vendor's core reverse-operations capability.
