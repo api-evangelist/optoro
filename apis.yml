@@ -30,16 +30,16 @@ created: '2026-08-26'
 modified: '2026-08-26'
 image: https://www.optoro.com/wp-content/uploads/2024/03/optoro-home-hero-lg.png
 tags:
-- Returns Management
-- Reverse Logistics
+- returns-management
+- reverse-logistics
 - Retail
 - Supply Chain
-- eCommerce
-- Fulfillment
-- Drop Ship
+- E-Commerce
+- fulfillment
+- drop-ship
 - Inventory
-- Webhooks
-- Order Management
+- Webhook
+- order-management
 tags_raw:
 - returns-management
 - reverse-logistics
@@ -58,6 +58,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - ASNs
+  tags_raw:
   - Asns
   properties:
   - type: OpenAPI
@@ -206,6 +208,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - Exchange - Orders
+  tags_raw:
   - Exchange Orders
   properties:
   - type: OpenAPI
@@ -374,6 +378,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - Authentication
+  tags_raw:
   - Oauth
   properties:
   - type: OpenAPI
@@ -398,6 +404,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - Order
+  tags_raw:
   - Orders
   properties:
   - type: OpenAPI
@@ -518,6 +526,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - SKU
+  tags_raw:
   - Sku
   properties:
   - type: OpenAPI
