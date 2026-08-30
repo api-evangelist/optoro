@@ -1,0 +1,299 @@
+openapi: 3.2.0
+info:
+  title: Drop Ship Shipments API
+  version: '6.0'
+  contact:
+    name: Fulfillment'
+  description: 'The Drop Shipping API enables customers to fulfill orders for available units and lots that are in stock in the Optoro RMS.
+
+    '
+servers:
+- url: https://drop-ship.optiturn.com
+  description: Production
+- url: https://drop-ship.sandbox.optiturn.com
+  description: Sandbox
+tags:
+- name: Shipments
+paths:
+  /shipments:
+    get:
+      summary: Lists shipments
+      description: 'Results from the shipments endpoint are paginated and the subset of shipments that are returned are based on the page and per_page parameters supplied in the request. The total count of records in the set is returned in the response header record_count. This can be used to calculate the number of pages that need to be retrieved to get all records.
+
+        '
+      operationId: shipmentsIndex
+      tags:
+      - Shipments
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: updated_at
+        in: query
+        description: Last updated time in ISO 8601 format, UTC.
+        required: true
+        schema:
+          type: string
+          format: date-time
+          example: '2022-01-01T17:27:46'
+      - name: channel
+        in: query
+        description: Filter shipments by Inventory channel name.
+        required: false
+        schema:
+          type: string
+          example: rts_drop_ship
+      - name: page
+        in: query
+        description: 'The page of results to retrieve. If page number is above maximum an empty result set will be returned.
+
+          '
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        description: 'This allows control over the amount of results returned per page. Maximum allowed value is 100.
+
+          '
+        required: false
+        schema:
+          type: integer
+          default: 20
+          maximum: 100
+      responses:
+        '200':
+          description: 'Returns the list of shipments matching the given conditions.
+
+            '
+          headers:
+            record_count:
+              description: The total number of records in the set.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/shipment'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Description of the error message
+                    example: Invalid request parameters
+              examples:
+                invalidPage:
+                  summary: Invalid Type for Page
+                  value:
+                    message: Invalid page
+                invalidPerPage:
+                  summary: Invalid Type for Per Page
+                  value:
+                    message: Invalid per_page
+                invalidUpdatedAt:
+                  summary: Invalid Type for Updated At
+                  value:
+                    message: Invalid updated_at date
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message if the request is unprocessable.
+                    example: Invalid updated_at date; should not be older than 3 months
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /shipments/{id}:
+    get:
+      summary: Show details of a shipment
+      description: Get details of a shipment by tracking number.
+      operationId: shipmentsShow
+      tags:
+      - Shipments
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        description: Tracking number of the package.
+        required: true
+        schema:
+          type: string
+          example: 1Z2E07A20302245707
+      - name: carrier
+        in: query
+        description: Carrier used in shipping.
+        schema:
+          type: string
+          example: UPS
+      responses:
+        '200':
+          description: Returns the details of a shipment.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/shipment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /shipments/identifier/{id}:
+    get:
+      summary: Show list of the shipments for an order
+      description: Get details of a shipments filtered by an order.
+      operationId: shipmentsShowByIdentifier
+      tags:
+      - Shipments
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        description: Client Order Identifier
+        required: true
+        schema:
+          type: string
+          example: ORDER-1
+      responses:
+        '200':
+          description: Returns the list of shipments for the given order.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/shipment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Not Authorized
+    BadRequest:
+      description: Bad Request
+  schemas:
+    shipment:
+      type: object
+      description: Shipment attributes
+      properties:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          minimum: 1
+        client_identifier:
+          type: string
+          description: client_identifier associated with the shipment which is also associated with the order
+          example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+        channel:
+          type: string
+          description: Inventory channel name
+          example: rts_drop_ship
+        carrier:
+          type: string
+          description: Carrier used for the shipment
+          example: UPS
+        shipping_method:
+          type: string
+          description: Name of the shipping method used for the shipment
+          example: UPS 2nd day air
+        tracking_number:
+          type: string
+          description: Shipment tracking number
+          example: 1Z2E07A20302245707
+        billed_weight:
+          type: number
+          description: Weight of the shipment in pounds
+          example: 10
+        shipping_cost_cents:
+          type: integer
+          description: Actual shipping cost paid to ship the package
+          example: 1000
+        packing_slip_identifier:
+          type: string
+          description: Identifier to be printed on the packing slip barcode. If null, client_identifier will be the default barcode.
+          example: '1497064'
+        shipment_items:
+          type: array
+          description: Items included in this shipment
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: An object's database primary key. Do not rely on this value!
+                minimum: 1
+              client_identifier:
+                type: string
+                description: Client_identifier associated with the shipment item which is also associated with the order item
+                example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+              sku:
+                type: string
+                description: SKU or the lot name of the associated item
+                example: SKU12345
+              quantity:
+                type: integer
+                description: Shipped item quantity
+                minimum: 1
+              created_at:
+                type: string
+                format: date-time
+                description: Date in ISO 8601 format in UTC
+              updated_at:
+                type: string
+                format: date-time
+                description: Date in ISO 8601 format in UTC
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+  parameters:
+    api-version:
+      name: api-version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '6'
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}

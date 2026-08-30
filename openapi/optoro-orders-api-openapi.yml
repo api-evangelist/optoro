@@ -1,0 +1,1139 @@
+openapi: 3.2.0
+info:
+  title: Drop Ship Orders API
+  version: '6.0'
+  contact:
+    name: Fulfillment'
+  description: 'The Drop Shipping API enables customers to fulfill orders for available units and lots that are in stock in the Optoro RMS.
+
+    '
+servers:
+- url: https://drop-ship.optiturn.com
+  description: Production
+- url: https://drop-ship.sandbox.optiturn.com
+  description: Sandbox
+tags:
+- name: Orders
+paths:
+  /orders:
+    get:
+      summary: List orders
+      description: 'Results from the orders endpoint are paginated and the subset of orders that are returned are based on the page and per_page parameters supplied in the request.
+
+        '
+      operationId: OrdersIndex
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: updated_at
+        in: query
+        required: true
+        description: 'Last updated time in ISO 8601 format, UTC. updated_at value should not be older than 3 months.
+
+          '
+        schema:
+          type: string
+          format: date-time
+          example: '2023-01-01T17:27:46'
+      - name: channel
+        in: query
+        required: false
+        description: 'Filter orders by Inventory channel name.
+
+          '
+        schema:
+          type: string
+          example: rts_drop_ship
+      - name: status
+        in: query
+        required: true
+        description: 'Filter orders by status
+
+          '
+        schema:
+          type: string
+          enum:
+          - accepted
+          - rejected
+          - cancelled
+          - pending_payment
+          - partially_shipped
+          - shipped
+      - name: page
+        in: query
+        description: The page of results to retrieve; If page number is above maximum an empty result set will be returned.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      responses:
+        '200':
+          description: A list of orders of units and lots. The total number of records in the set will be in the response header record_count.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/order'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Description of the error message
+                    example: Invalid request parameters
+              examples:
+                invalidPage:
+                  summary: Invalid Type for Page
+                  value:
+                    message: Invalid page
+                invalidPerPage:
+                  summary: Invalid Type for Per Page
+                  value:
+                    message: Invalid per_page
+                invalidUpdatedAt:
+                  summary: Invalid Type for Updated At
+                  value:
+                    message: Invalid updated_at date
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message if the request is unprocessable.
+                    example: Invalid updated_at date; should not be older than 3 months
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create an order
+      description: 'Used to notify Optoro of purchases of individual units or lots. Units or lots are assigned as an order item on the order.
+
+        '
+      operationId: ordersCreate
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/order-2'
+      responses:
+        '200':
+          description: Order rejected response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 200 code with message “rejected” if the order was rejected for some reason.
+                    example: rejected
+                  reason:
+                    type: string
+                    description: This is an example of the response for insufficient inventory. Only available in Version 5+.
+                    example: Insufficient inventory to fill order
+                  order:
+                    type: object
+                    description: Order details with insufficient items when order is rejected due to insifficient quantity.
+                    properties:
+                      client_identifier:
+                        type: string
+                        description: Order client identifier.
+                        example: '3573390128'
+                      order_items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            client_identifier:
+                              type: string
+                              description: The order item identifier for the insufficient order item.
+                              example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                            sku:
+                              type: string
+                              description: Item SKU or listing identifier. This will always be listing.identifier.
+                              example: PTBQ121308
+                            condition:
+                              type: string
+                              description: The condition code for the order item.
+                              example: N
+                            quantity:
+                              type: integer
+                              description: The quantity of the order item.
+                              example: 3
+                            available_quantity:
+                              type: integer
+                              description: The quantity available for the listing with the order item sku and condition.
+                              example: 1
+              examples:
+                no_availablity:
+                  summary: Rejected due to no availability
+                  value:
+                    message: rejected
+                    reason: 'Insufficient Quantity for: <order item  #1 client_identifier> - <order item  #1 sku>(condition), <order item  #2 client_identifier> - <order item  #2 sku> (condition)'
+                    order:
+                      client_identifier: '3573390128'
+                      order_items:
+                      - client_identifier: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                        sku: PTBQ121308
+                        condition: N
+                        quantity: 3
+                        available_quantity: 1
+                pending_payment:
+                  summary: Rejected due to payment_status field sent as pending
+                  value:
+                    message: rejected
+                    reason: Order cannot be marked as pending payment
+                invalid_shipping_address:
+                  summary: Rejected due to invalid shipping address
+                  value:
+                    message: rejected
+                    reason: Invalid shipping address
+        '201':
+          description: Order accepted response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 201 code with message “accepted” / "pending_payment" if the order was accepted or marked as pending_payment.
+                    example: accepted
+                  reason:
+                    type: string
+                    description: Reason the order was accepted.
+                    example: Order accepted
+              examples:
+                accpeted:
+                  summary: Order was accepted
+                  value:
+                    message: accepted
+                    reason: Order accepted
+                pending_payment:
+                  summary: Order for lots that was submitted with pending payment is accepted.
+                  value:
+                    message: pending_payment
+                    reason: Order accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/LargeRequest'
+        '422':
+          description: Order not created response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message “Order not created” if the order is unprocessable.
+                    example: Order not created
+                  reason:
+                    type: string
+                    description: This is an example of the response if the order already exists.
+                    example: Order with identifier 123 already exists. Order is in status 'accepted'
+              examples:
+                already_exists:
+                  summary: Order not created if the order already exists
+                  value:
+                    message: Order not created
+                    reason: Order with identifier 123 already exists. Order is in status 'accepted'
+                client_identifier_missing:
+                  summary: Order not created if the client identifier is missing for the order.
+                  value:
+                    message: Order not created
+                    reason: 'Validation failed: Client identifier can''t be blank'
+                max_limit_reached:
+                  summary: Order not created if the number of items for the order is great than 125.
+                  value:
+                    message: Order not created
+                    reason: The maximum number of items in an order is 125. Please try again with a smaller number of items
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /batch/orders:
+    post:
+      summary: Create orders in batches
+      description: 'This request creates orders in batches. Batches can contain a maximum of 25 orders per request.
+
+        '
+      operationId: batchOrdersCreate
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orders:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/order-2'
+      responses:
+        '200':
+          description: Batch order creation response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    client_identifier:
+                      type: string
+                      description: Client identifier of the order.
+                      example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status:
+                      type: string
+                      description: Status of the order
+                      enum:
+                      - created
+                      - invalid
+                    message:
+                      type:
+                      - string
+                      - 'null'
+                      description: Success or error message
+                      example: created
+              examples:
+                ordersCreated:
+                  summary: Orders created
+                  value:
+                  - client_identifier: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status: created
+                    message: null
+                ordersalreadyExists:
+                  summary: Orders already exists
+                  value:
+                  - client_identifier: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status: invalid
+                    message: Order with identifier 3fda4c37-6830-469f-b343-9d1a482a97fd already exists. Order is in status 'accepted'.
+                fieldMissing:
+                  summary: Required field is missing
+                  value:
+                  - client_identifier: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status: invalid
+                    message: 'property <base field> is missing required keys: <field_name>.'
+                multipefieldsMissing:
+                  summary: Multiple required fields are missing
+                  value:
+                  - client_identifier: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status: invalid
+                    message: 'root is missing required keys: <field_name>, property <parent_field_name> is missing required keys: <field_name>'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          description: Request too large
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 413 code with message if the request is too large.
+                    example: Request too large. Max allowed batch size 25
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    client_identifier:
+                      type: string
+                      description: Client identifier of the order.
+                      example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+                    status:
+                      type: string
+                      description: Status of the order
+                      example: invalid
+                    message:
+                      type: string
+                      description: Validation error message
+                      example: The maximum number of items in an order is 125. Please try again with a smaller number of items
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /orders/{id}:
+    get:
+      summary: Show an order by identifier
+      description: 'Returns the order details for the order that matches the identifier that is included in the url path.
+
+        '
+      operationId: ordersShow
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        required: true
+        description: The client identifier for the desired order
+        schema:
+          type: string
+          example: '3573390128'
+      responses:
+        '200':
+          description: Success response will return HTTP status code 200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order:
+                    $ref: '#/components/schemas/order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/LargeRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update an order by identifier
+      description: 'Marks the lot order that matches the identifier that is included in the url path as accepted from pending_payment.
+
+        '
+      operationId: ordersUpdate
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        required: true
+        description: The client identifier for the desired order
+        schema:
+          type: string
+          example: '3573390128'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  type: object
+                  description: Order attributes
+                  properties:
+                    payment_status:
+                      type: string
+                      description: Current Payment status of the order. Applicable only for lot orders.
+                      enum:
+                      - complete
+      responses:
+        '204':
+          description: Success response will return HTTP status code 204 with no content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Returns an error with HTTP status code 404 when the order could not be found.
+                    example: Order cannot be found
+        '413':
+          $ref: '#/components/responses/LargeRequest'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Description of the error message
+                    example: Payment status is not valid
+              examples:
+                invalidPaymentStatus:
+                  summary: Invalid Payment status
+                  value:
+                    message: Payment status is not valid
+                invalidOrder:
+                  summary: Invalid Order
+                  value:
+                    message: Order status should be pending_payment
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Returns an error with HTTP status code 500 when the order could not be cancelled.
+                    example: Order cancellation failed. Please try again
+    delete:
+      summary: Cancel an order by identifier
+      description: 'Cancels the lot order that matches the identifier that is included in the url path from pending_payment status.
+
+        '
+      operationId: ordersCancel
+      tags:
+      - Orders
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        required: true
+        description: The client identifier for the desired order
+        schema:
+          type: string
+          example: '3573390128'
+      responses:
+        '204':
+          description: Success response will return HTTP status code 204 with no content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Returns an error with HTTP status code 404 when the order could not be found.
+                    example: Order cannot be found
+        '413':
+          $ref: '#/components/responses/LargeRequest'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message if the request is unprocessable.
+                    example: Order status should be pending_payment
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Returns an error with HTTP status code 500 when the order could not be cancelled.
+                    example: Order cancellation failed. Please try again
+components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Not Authorized
+    NotFound:
+      description: Not Found
+    UnprocessableEntity:
+      description: Unprocessable Entity
+    BadRequest:
+      description: Bad Request
+    LargeRequest:
+      description: Request too large
+  schemas:
+    order:
+      type: object
+      description: Order attributes
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          description: An object's database primary key. Do not rely on this value!
+        client_identifier:
+          type: string
+          description: The unique identifier for the order, typically coming from the customer's ecommerce Platform or OMS
+          example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+        billing_address:
+          description: Billing address on the order.
+          $ref: '#/components/schemas/billing_address'
+        shipping_address:
+          description: Shipping address on the order.
+          $ref: '#/components/schemas/shipping_address'
+        brand:
+          type: string
+          description: Brand name of client that received the order.
+          example: acme
+        shipping_method:
+          type: string
+          description: 'The shipping method to be used on the order.
+
+
+            Optoro will search for a shipping method that delivers within the timeframes outlined below
+
+            * Standard - best rate, no constraint on days
+
+            * Express - <= 2 days
+
+            * Overnight - <= 1 days
+
+            '
+          enum:
+          - STANDARD
+          - EXPRESS
+          - OVERNIGHT
+          - FREIGHT
+          - PICK-UP
+        status:
+          type: string
+          description: Status of the order.
+          enum:
+          - accepted
+          - rejected
+          - cancelled
+          - pending_payment
+          - partially_shipped
+          - shipped
+        price_cents:
+          type: integer
+          description: Price paid in cents for the order.
+          example: 10000
+        processing_fee_cents:
+          type: integer
+          description: Processing fee paid in cents for the order.
+          example: 0
+        tax_cents:
+          type: integer
+          description: Tax paid in cents for the order.
+          example: 1000
+        shipping_cost_cents:
+          type: integer
+          description: Shipping cost paid in cents for the order.
+          example: 500
+        shipping_tax_cents:
+          type: integer
+          description: Shipping tax paid in cents for the order.
+          example: 0
+        comments:
+          type: string
+          description: Comments regarding the order.
+          example: Sample order instructions
+        expected_delivery_date:
+          type: string
+          format: date
+          description: Expected delivery date of the order.
+        signature_required:
+          type: boolean
+          description: Specifies if a customer signature is required on delivery
+        packing_slip_identifier:
+          type: string
+          description: Packing slip identifier for the order.
+          example: '1497064'
+        reject_reason:
+          type: string
+          description: Reason the order was rejected.
+          example: ''
+        order_items:
+          type: array
+          description: Array of order items on the order
+          items:
+            $ref: '#/components/schemas/order_item'
+        created_at:
+          type: string
+          format: date-time
+          description: Date created in ISO 8601 format in UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Date last updated in ISO 8601 format in UTC
+      additionalProperties: false
+      required:
+      - client_identifier
+      - brand
+      - price_cents
+      - tax_cents
+      - shipping_cost_cents
+      - shipping_tax_cents
+      - channel
+      - shipping_method
+      - billing_address
+      - shipping_address
+      - order_items
+    billing_address-2:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name for the address.
+          example: Lacy Macejkovic
+        company:
+          type: string
+          description: Company name for the address.
+          example: Bayer-Abernathy
+        telephone_number:
+          type: string
+          description: Telephone number linked to the address.
+          example: 252-948-6723 12345
+        street:
+          type: string
+          description: Street line 1 of the address.
+          example: 315 5th Ave
+        street2:
+          type: string
+          description: Street line 2 of the address.
+          example: Suite 2112
+        city:
+          type: string
+          description: City of the address.
+          example: New York
+        state:
+          type: string
+          description: State of the address.
+          example: NY
+        zip_code:
+          type: string
+          description: Zip code of the address.
+          example: '10016'
+        country:
+          type: string
+          description: Country of the address.
+          example: US
+      additionalProperties: false
+      required:
+      - name
+      - telephone_number
+      - street
+      - city
+      - state
+      - zip_code
+    order-2:
+      type: object
+      description: Order attributes
+      properties:
+        client_identifier:
+          type: string
+          description: The unique identifier for the order, typically coming from the customer's ecommerce Platform or OMS
+          example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+        channel:
+          type: string
+          description: This is the name of the channel that the inventory available for Drop Shipping has been dispositioned to in the Optoro RMS. The channel name/names will be provided by the implementation team
+          example: rts_drop_ship
+        billing_address:
+          description: Billing address on the order.
+          $ref: '#/components/schemas/billing_address-2'
+        shipping_address:
+          description: Shipping address on the order.
+          $ref: '#/components/schemas/shipping_address-2'
+        brand:
+          type: string
+          description: Brand name of client that received the order.
+          example: acme
+        shipping_method:
+          type: string
+          description: 'The shipping method to be used on the order.
+
+
+            Optoro will search for a shipping method that delivers within the timeframes outlined below
+
+            * Standard - best rate, no constraint on days
+
+            * Express - <= 2 days
+
+            * Overnight - <= 1 days
+
+            '
+          enum:
+          - STANDARD
+          - EXPRESS
+          - OVERNIGHT
+          - FREIGHT
+          - PICK-UP
+        price_cents:
+          type: integer
+          description: Price paid in cents for the order.
+          example: 10000
+        processing_fee_cents:
+          type: integer
+          description: Processing fee paid in cents for the order.
+          example: 0
+        tax_cents:
+          type: integer
+          description: Tax paid in cents for the order.
+          example: 1000
+        shipping_cost_cents:
+          type: integer
+          description: Shipping cost paid in cents for the order.
+          example: 500
+        shipping_tax_cents:
+          type: integer
+          description: Shipping tax paid in cents for the order.
+          example: 0
+        comments:
+          type: string
+          description: Comments regarding the order.
+          example: Gift wrap required
+        expected_delivery_date:
+          type: string
+          format: date
+          description: Expected delivery date of the order.
+        signature_required:
+          type: boolean
+          description: Specifies if a customer signature is required on delivery
+        packing_slip_identifier:
+          type: string
+          description: Packing slip identifier for the order.
+          example: '1497064'
+        order_items:
+          type: array
+          description: Array of order items on the order
+          items:
+            $ref: '#/components/schemas/order_item-2'
+      additionalProperties: false
+      required:
+      - client_identifier
+      - brand
+      - price_cents
+      - tax_cents
+      - shipping_cost_cents
+      - shipping_tax_cents
+      - channel
+      - shipping_method
+      - billing_address
+      - shipping_address
+      - order_items
+    order_item-2:
+      type: object
+      description: Order Item attributes
+      properties:
+        client_identifier:
+          type: string
+          description: The order item identifier for the order item, typically coming from the customer's ecommerce platform or OMS
+          example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+        sku:
+          type: string
+          description: Item SKU or listing identifier. This will always be listing.identifier
+          example: PTBQ121308
+        brand:
+          type: string
+          description: The brand name of the order item
+          example: acme
+        condition:
+          type: string
+          description: The condition code for the order item
+          example: N
+        quantity:
+          type: integer
+          description: The quantity of the order item
+          example: 1
+        price_cents:
+          type: integer
+          description: The price in cents for the total quantity of the order item
+          example: 10000
+        tax_cents:
+          type: integer
+          description: The tax in cents for the total quantity of the order item
+          example: 1000
+        shipping_cost_cents:
+          type: integer
+          description: The shipping cost paid in cents for the order item
+          example: 500
+        shipping_tax_cents:
+          type: integer
+          description: The shipping tax paid in cents for the order item
+          example: 0
+        comments:
+          type: string
+          description: Comments associated with the order item
+          example: ''
+      additionalProperties: false
+    shipping_address:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          example: 1
+        name:
+          type: string
+          description: Name for the address.
+          example: James Carter
+        company:
+          type: string
+          description: Company name for the address.
+          example: Carter Industries
+        telephone_number:
+          type: string
+          description: Telephone number linked to the address.
+          example: (206) 555-1208
+        street:
+          type: string
+          description: Street line 1 of the address.
+          example: 121 Vine Street
+        street2:
+          type: string
+          description: Street line 2 of the address.
+          example: Suite 1200
+        city:
+          type: string
+          description: City of the address.
+          example: Seattle
+        state:
+          type: string
+          description: State of the address.
+          example: WA
+        zip_code:
+          type: string
+          description: Zip code of the address.
+          example: '98121'
+        country:
+          type: string
+          description: Country of the address.
+          example: US
+        loading_dock:
+          type: boolean
+          description: Flag to determine whether fork lift is required to deliver package.
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+      additionalProperties: false
+    billing_address:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          example: 1
+        name:
+          type: string
+          description: Name for the address.
+          example: Lacy Macejkovic
+        company:
+          type: string
+          description: Company name for the address.
+          example: Bayer-Abernathy
+        telephone_number:
+          type: string
+          description: Telephone number linked to the address.
+          example: (914) 000-8971
+        street:
+          type: string
+          description: Street line 1 of the address.
+          example: 315 5th Ave
+        street2:
+          type: string
+          description: Street line 2 of the address.
+          example: Suite 2112
+        city:
+          type: string
+          description: City of the address.
+          example: Scarsdale
+        state:
+          type: string
+          description: State of the address.
+          example: NY
+        zip_code:
+          type: string
+          description: Zip code of the address.
+          example: '10583'
+        country:
+          type: string
+          description: Country of the address.
+          example: US
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+      additionalProperties: false
+    order_item:
+      type: object
+      description: Order Item attributes
+      properties:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          example: 1
+        client_identifier:
+          type: string
+          description: The order item identifier for the order item, typically coming from the customer's ecommerce platform or OMS
+          example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+        sku:
+          type: string
+          description: Item SKU or listing identifier. This will always be listing.identifier
+          example: PTBQ121308
+        brand:
+          type: string
+          description: The brand name of the order item
+          example: test_brand
+        condition:
+          type: string
+          description: The condition code for the order item
+          example: N
+        quantity:
+          type: integer
+          description: The quantity of the order item
+          example: 1
+        price_cents:
+          type: integer
+          description: The price in cents for the total quantity of the order item
+          example: 10000
+        tax_cents:
+          type: integer
+          description: The tax in cents for the total quantity of the order item
+          example: 1000
+        shipping_cost_cents:
+          type: integer
+          description: The shipping cost paid in cents for the order item
+          example: 500
+        shipping_tax_cents:
+          type: integer
+          description: The shipping tax paid in cents for the order item
+          example: 0
+        status:
+          type: string
+          description: Status of the order item
+          enum:
+          - created
+          - accepted
+          - rejected
+          - cancelled
+          - pending
+          - partially_shipped
+          - shipped
+        comments:
+          type: string
+          description: Comments associated with the order item
+        created_at:
+          type: string
+          format: date-time
+          description: Date created in ISO 8601 format in UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Date last updated in ISO 8601 format in UTC
+      additionalProperties: false
+    shipping_address-2:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name for the address.
+          example: Lacy Macejkovic
+        company:
+          type: string
+          description: Company name for the address.
+          example: Bayer-Abernathy
+        telephone_number:
+          type: string
+          description: Telephone number linked to the address.
+          example: 252-948-6723 12345
+        street:
+          type: string
+          description: Street line 1 of the address.
+          example: 315 5th Ave
+        street2:
+          type: string
+          description: Street line 2 of the address.
+          example: Suite 2112
+        city:
+          type: string
+          description: City of the address.
+          example: New York
+        state:
+          type: string
+          description: State of the address.
+          example: NY
+        zip_code:
+          type: string
+          description: Zip code of the address.
+          example: '10016'
+        country:
+          type: string
+          description: Country of the address.
+          example: US
+        loading_dock:
+          type: boolean
+          description: Flag to determine whether fork lift is required to deliver package.
+      additionalProperties: false
+      required:
+      - name
+      - telephone_number
+      - street
+      - city
+      - state
+      - zip_code
+  parameters:
+    api-version:
+      name: api-version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '6'
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}

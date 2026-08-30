@@ -1,0 +1,170 @@
+openapi: 3.2.0
+info:
+  title: Drop Shipment Partial Cancellation API
+  version: 1.0.0
+  contact:
+    name: Fulfillment
+  description: '## Introduction
+
+    The Drop Ship is used to communicate to the client once an order has been shipped or cancelled from OptiTurn, to close an order within the client''s OMS.
+
+    ### Post Confirmation:
+
+    The Drop Shipment Confirmation API is used to post a shipment confirmation for the orders shipped so that the client can close the order on their end. Optoro can POST a shipment confirmation to the client endpoint.
+
+    ### Post Cancellation:
+
+    The Drop Shipment Cancellation API is used to post a cancelled order to a client endpoint. An order could be rejected or cancelled in the warehouse, due to the inventory not being found or it being damaged.
+
+    ### Post Partial Cancellation:
+
+    The Drop Shipment Partial Cancellation API is used to post a partially cancelled order to a client endpoint. An order item could be cancelled in the warehouse, due to the inventory is not being found or damaged.
+
+    ## Failure Handling
+
+    <p>When Optoro receives a 401 HTTP status, Optoro will request a new Authentication Token from the client''s services and retry the request.</p> <p>When Optoro receives any other error (as described above and identified by a 4xx (not 401) or 5xx range http status code) Optoro will retry five times with the same message.  The retries will happen at an exponential backoff cadence in order not to overload machines.  If the failure persists, the message will be stored in a failure queue and Optoro will have a technical contact person reach out to client tech support to report a problem.  When the problem has been resolved, Optoro can manually retry failed requests.</p> <p>For Drop Shipment acknowledgement, all errors are handled the same since this is not in a user facing flow.  However, the differentiation of status codes will help Optoro when reporting an issue.</p>
+
+    '
+servers:
+- url: https://developer.optoro.com
+tags:
+- name: Drop Shipment Partial Cancellation
+paths:
+  /drop_shipment_partial_cancellation:
+    post:
+      summary: POST a Drop Shipment Partial Cancellation
+      operationId: drop_shipment_partial_cancellation
+      description: 'Client endpoint to which Drop Shipment Partial Cancellation data is posted to.
+
+        <br>This endpoint along with any authentication mechanisms needed must be communicated to client''s account manager.
+
+        '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropShipmentPushPartialCancellation'
+      responses:
+        '200':
+          description: Success. Optoro recommends client APIs respond with a JSON-structured object. This is used for debugging purposes only so this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+      tags:
+      - Drop Shipment Partial Cancellation
+components:
+  responses:
+    Unauthorized:
+      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable
+    BadRequest:
+      description: Bad Request
+  schemas:
+    DropShipmentPushPartialCancellation:
+      type: object
+      description: Drop Shipment Partial Cancellation Data
+      properties:
+        order:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: An object's database primary key. Do not rely on this value!
+              example: 1
+            client_identifier:
+              type: string
+              description: client_identifier associated with the shipment which is also associated with the order
+              example: 3fda4c37-6830-469f-b343-9d1a482a97fd
+            status:
+              type: string
+              description: Status of the order.
+              example: shipped
+            order_items:
+              type: array
+              description: Order Item attributes
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: An object's database primary key. Do not rely on this value!
+                    example: 1
+                  client_identifier:
+                    type: string
+                    description: The order item identifier for the order item, typically coming from the customer's ecommerce platform or OMS
+                    example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+                  status:
+                    type: string
+                    description: Status of the order item
+                    example: cancelled
+                  quantity:
+                    type: integer
+                    description: The quantity of the order item
+                    example: 3
+                  cancelled_quantity:
+                    type: integer
+                    description: The quantity of the order item
+                    example: 1
+                additionalProperties: false
+                required:
+                - client_identifier
+                - status
+                - quantity
+                - cancelled_quantity
+      additionalProperties: false
+      required:
+      - client_identifier
+      - status
+      - order_items
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                - missing_field
+                - invalid_type
+                - invalid

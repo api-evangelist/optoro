@@ -1,0 +1,207 @@
+openapi: 3.2.0
+info:
+  title: Real Time Inventory Receipt API
+  description: The Inventory Receipt API allows clients to be notified when a unit is received into Optiturn against an ASN. This requires that an ASN was sent to Optiturn for the inventory.
+  version: 1.0.0
+  contact:
+    name: Receiving
+tags:
+- name: Inventory Receipt
+paths:
+  /inventory_receipt:
+    post:
+      summary: Create Inventory Receipt
+      description: It notifies when a unit is received into Optiturn against an ASN. Endpoint provided by the client to the Optoro account manager.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - program_identifier
+              - asn_number
+              - from
+              - to
+              - unit_identifier
+              - sku
+              - initial_condition
+              - initial_channel
+              - ot_user_login
+              properties:
+                program_identifier:
+                  type: string
+                  example: returns
+                  description: The program identifier under which this inventory was received. This value will be provided by your implementation team.
+                asn_number:
+                  type: string
+                  example: SO00001234
+                  description: The reference number for the ASN this item is being received against.
+                shipment_identifier:
+                  type: string
+                  example: SI1ZAAAAAAZZ97764680
+                  description: A reference number which may be used to identify multiple ASNs which were created against a single Order or RMA. This is the shipment_identifier that was passed on the Inbound ASN.
+                from:
+                  type: object
+                  $ref: '#/components/schemas/From'
+                  description: The from location for the ASN this receipt is being sent for..
+                to:
+                  type: object
+                  $ref: '#/components/schemas/To'
+                  description: The location where the item was received.
+                carton_identifier:
+                  type: string
+                  example: CTAA1234567
+                  description: The carton.identifier this unit was received in, if present on the inbound ASN.
+                reference:
+                  type: object
+                  $ref: '#/components/schemas/Reference'
+                  description: Reference to a StockTransferOrder, RMA or ForwardOrder which this item was received against.
+                line_identifier:
+                  type: string
+                  example: 123456789
+                  description: The `line_identifer` in the ASN which this unit was received against.
+                unit_identifier:
+                  type: string
+                  example: 123456891011
+                  description: The Optiturn LP.
+                reference_line_identifier:
+                  type: string
+                  example: 1
+                  description: If present, the line in the reference which this unit was received against e.g. an RMA item.
+                sku:
+                  type: string
+                  example: S123456
+                  description: The SKU for this item.
+                upc:
+                  type: string
+                  example: 12345678905
+                  description: The UPC for this item.
+                serial_number:
+                  type: string
+                  example: 12345678910001
+                  description: The serial number for this unit, if provided on the inbound ASN or collected.
+                initial_condition:
+                  type: string
+                  enum:
+                  - N
+                  - R
+                  - A
+                  - B
+                  - C
+                  - X
+                  - TT
+                  example: N
+                  description: 'Condition during receiving - values will be one of the following: ''N'', ''R'', ''A'', ''B'', ''C'', ''X'', ''TT''.
+
+                    '
+                initial_channel:
+                  type: string
+                  example: blinq
+                  description: The channel this unit was assigned at receiving. This can change throughout the workflow.
+                return_reason:
+                  type: string
+                  example: not like
+                  description: The reason for a return, if provided on the inbound ASN or collected.
+                ot_user_login:
+                  type: string
+                  example: jdoe@email.com
+                  description: The user who received the unit.
+                merchant:
+                  type: string
+                  example: Merchant Name
+                  description: The merchant passed on the inbound ASN. Typically the inventory owner.
+                concept:
+                  type: string
+                  example: Brand
+                  description: The concept passed on the inbound ASN. Typically a brand of the merchant.
+                asin:
+                  type: string
+                  example: 120029872
+                  description: Amazon Serial Identification Number. A 10-character alphanumeric unique identifier, which can be used to identify the product at receiving.
+                tracking_number:
+                  type: string
+                  example: 123012300123033
+                  description: Tracking number scanned at receiving. This may differ from the one provided on the Inbound ASN in the event of an exception scenario.
+                location_identifier:
+                  type: string
+                  example: Pallet 1
+                  description: Initial storage location in Optiturn where the unit is placed after receiving.
+                client_unit_identifier:
+                  type: string
+                  example: 123456891011
+                  description: The `details.unit.identifier` passed on the inbound ASN OR the client LPs if present.
+                reject_reason:
+                  type: string
+                  example: Empty Box
+                  description: '''Empty Box'' when a receiver indicates a parcel is empty or clearly at attempt at fraud i.e. a brick.
+
+                    '
+      responses:
+        '200':
+          description: Success response should return HTTP status code 200 if the API already received the rma info in a prior request.
+        '201':
+          description: Success response should return HTTP status code 201 for a new rma.
+        '400':
+          description: Error response will be HTTP status code 400 for other bad/unparseable requests.
+        '401':
+          description: Error response will be HTTP status code 401 for missing or bad api_key (these have no body).
+        '422':
+          description: Error response will be HTTP status code 422 for validation errors (missing or invalid fields in this case).
+      tags:
+      - Inventory Receipt
+components:
+  schemas:
+    To:
+      required:
+      - identifier
+      - type
+      - original_identifier
+      properties:
+        identifier:
+          type: integer
+          example: 1352
+          description: Identifier for the to location. The internal OptiTurn warehouse identifier where this unit was received. This will be provided by your implementation team.
+        type:
+          type: string
+          example: Store
+          description: Type of the to location
+        original_identifier:
+          type: string
+          example: 42
+          description: Identifier for the original location. ie Numeric Warehouse ID, Store Number.
+    From:
+      required:
+      - identifier
+      - type
+      properties:
+        identifier:
+          type: string
+          example: 22
+          description: The from location for the ASN this receipt is being sent for.
+        type:
+          type: string
+          example: Warehouse
+          description: Type of the from location. Matches the Inbound ASN from.type.
+    Reference:
+      properties:
+        type:
+          type: string
+          enum:
+          - StockTransferOrder
+          - RA
+          - RMA
+          - ForwardOrder
+          example: RMA
+          description: 'Reference type, allowed values are: StockTransferOrder, RA, RMA or ForwardOrder.
+
+            '
+        identifier:
+          type: string
+          example: 12345
+          description: 'Reference identifier, often used to find the reference during receiving - for example: the RA Number associated with this shipment.
+
+            '
+        alternate_identifier:
+          type: string
+          example: OR12345678
+          description: Reference alternate identifier, should be scannable, used to locate the reference during receiving if the main identifier isn't always physically on the carton. Matches reference.alternate_identifier passed in Inbound ASN.

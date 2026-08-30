@@ -1,0 +1,173 @@
+openapi: 3.2.0
+info:
+  title: Final Dispositions API
+  version: 1.0.0
+  contact:
+    name: Fulfillment
+  description: '## Introduction
+
+    The Final Disposition API is used to communicate to the client the final state, or disposition, of a unit when it leaves the ROP and is placed in its highest possible value disposition.  For example, an unused, open box unit being returned to stock as a final disposition.
+
+    ## Failure Handling
+
+    <p>When Optoro receives a 401 HTTP status, Optoro will request a new Authentication Token from the client’s services and retry the request.</p> <p>When Optoro receives any other error (as described above and identified by a 4xx (not 401) or 5xx range http status code) Optoro will retry five times with the same message.  The retries will happen at an exponential backoff cadence in order not to overload machines.  If the failure persists, the message will be stored in a failure queue and Optoro will have a technical contact person reach out to client tech support to report a problem.  When the problem has been resolved, Optoro can manually retry failed requests.</p> <p>For Final Disposition acknowledgement, all errors are handled the same since this is not in a user facing flow.  However, the differentiation of status codes will help Optoro when reporting an issue.</p>
+
+    '
+servers:
+- url: https://developer.optoro.com
+tags:
+- name: Final Dispositions
+paths:
+  /final_dispositions:
+    post:
+      summary: POST a unit's final disposition
+      operationId: final_dispositions
+      description: 'Client endpoint to which final disposition update is posted to. <br>This endpoint along with any authentication mechanisms needed must be communicated to client’s account manager.
+
+        '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalDispositionPayload'
+      responses:
+        '200':
+          description: Success. Optoro recommends client APIs respond with a JSON-structured object. This is used for debugging purposes only so this guidance is technically optional.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation Failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/ServerUnavailable'
+      tags:
+      - Final Dispositions
+components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
+    ServerUnavailable:
+      description: Client Server Unavailable
+    BadRequest:
+      description: Bad Request
+  schemas:
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Containes one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                - missing_field
+                - invalid_type
+                - invalid
+    FinalDispositionPayload:
+      type: object
+      description: Final Disposition Data
+      properties:
+        disposition:
+          type: string
+          description: 'A flag indicating which channel this pallet is designated for.  Possible values are:  b2b, d2c, client_liquidation,  destroy, dispose, donate, outlets, recycle, removed, rts, rts_drop_ship, rtv, stock_transfer'
+          example: rts
+        timestamp:
+          type: string
+          description: iso8601 formatted date string (YYYY-MM-DDT00:00:00) in UTC
+          example: '2018-03-20T00:00:00'
+        location_identifier:
+          type: string
+          description: Shared storage location identifier (lot name, present in both Optoro and client’s system) representing the units final location
+          example: RTS-1112
+        warehouse_identifier:
+          type: string
+          description: Indicates the warehouse where the unit was located. Identifier can be configured by the client; otherwise will default to Optoro’s internal warehouse identifier.
+          example: '22'
+        optiturn_lp:
+          type: string
+          description: Unique alphanumeric id of the unit
+          example: LPAA1234567
+        program_identifier:
+          type: string
+          description: Either a client-provided program name or OptiTurn’s internal program id
+          example: parcel_returns
+        sku:
+          type: string
+          description: The client sku to which this unit belongs
+          example: '012344566700'
+        upc:
+          type: string
+          description: UPC for the unit
+          example: 0123456789012
+        condition:
+          type: string
+          description: '[N, TT, R, A, B, C, X] final condition value, a condition mapping is often created to match your internal conditions'
+          enum:
+          - N
+          - TT
+          - R
+          - A
+          - B
+          - C
+          - X
+          example: N
+        reference_unit_identifier:
+          type: string
+          description: A client-provided identifier for the unit, likely provided by an inbound integration
+          example: Unit A
+        store_identifier:
+          type: string
+          description: The identifier of the store that returned the unit to the warehouse
+          example: Store A
+        reason:
+          type: string
+          description: "The cause of  the disposition event. Currently only populated for remove and dispose events. See below for available values.\n<table>\n  <tr>\n    <th>Remove</th>\n    <th>Dispose</th>\n  </tr>\n  <tr>\n    <td>\n      <ul>\n        <li>internal_use</li>\n        <li>duplicate_item</li>\n        <li>lost_item</li>\n        <li>client_request</li>\n        <li>counterfeit</li>\n        <li>hazmat</li>\n        <li>recall</li>\n        <li>other</li>\n      </ul>\n    </td>\n    <td style=\"vertical-align: top;\">\n      <ul>\n        <li>no_item_in_box</li>\n        <li>physically_damaged</li>\n        <li>hygiene_issue</li>\n        <li>expired</li>\n        <li>personalization</li>\n      </ul>\n    </td>\n  </tr>\n</table>\n"
+          example: no_item_in_box
+        shipment_reference_identifier:
+          type: string
+          description: 'Uniquely identifies the shipment that left the warehouse. Varies by channel. For example: the order number of an RTS Drop Ship unit.'
+          example: '1'
+      additionalProperties: false
+      required:
+      - disposition
+      - timestamp
+      - location_identifier
+      - warehouse_identifier
+      - optiturn_lp
+      - program_identifier
+      - condition

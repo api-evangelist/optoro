@@ -1,0 +1,112 @@
+openapi: 3.2.0
+info:
+  title: OAUTH API
+  version: 1.0.0
+  description: 'The Auth API provides access to other Optoro APIs using the [OAuth 2.0](https://oauth.net/2/) client credentials flow. Optoro''s Client Success team will provide the credentials used when requesting an access token. The access token returned from the oauth/tokens endpoint will be used in subsequent requests to Optoro APIs.
+
+    '
+servers:
+- url: https://auth.optiturn.com
+  description: Production
+- url: https://auth.sandbox.optiturn.com
+  description: Sandbox
+tags:
+- name: Oauth
+paths:
+  /oauth/token:
+    post:
+      summary: Fetch Token
+      description: Returns an OAuth 2.0 access token and related metadata. Tokens should be used in subsequent requests to Optoro APIs.
+      operationId: oauthTokenFetch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - grant_type
+              - client_id
+              - client_secret
+              additionalProperties: false
+              properties:
+                grant_type:
+                  type: string
+                  description: The name of the OAuth flow used to create a token. Use 'client_credentials'.
+                client_id:
+                  type: string
+                  description: Identifier used to authenticate. Obtained from Optoro's Client Success team.
+                client_secret:
+                  type: string
+                  description: Secret used to authenticate. Obtained from Optoro's Client Success team.
+      responses:
+        '200':
+          description: An OAuth 2.0 bearer token and related metadata.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: A token that can be used to authenticate with other Optoro APIs.
+                  token_type:
+                    type: string
+                    description: The access token type, always "Bearer".
+                    enum:
+                    - Bearer
+                  expires_in:
+                    type: integer
+                    description: Time in seconds after which the token will expire.
+                  scope:
+                    type: string
+                    description: Space-delimited set of scopes for which the token is valid.
+                  created_at:
+                    type: integer
+                    description: The creation time of the token in seconds since epoch.
+              examples:
+                demoClientExample:
+                  value:
+                    access_token: G0ybScDl_7CA3tWVou
+                    token_type: Bearer
+                    expires_in: 90000
+                    scope: read write
+                    created_at: 1656518368
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Invalid credentials used to obtain an access token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Summary of the error that occurred while creating a token.
+                  error_description:
+                    type: string
+                    description: Details of the error that occurred while create a token.
+              examples:
+                invalidClient:
+                  value:
+                    error: invalid_client
+                    error_description: Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+      tags:
+      - Oauth
+components:
+  responses:
+    NotFound:
+      description: The requested resource could not be found.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    UnprocessableEntity:
+      description: The request could not not be processed. Ensure parameter values are valid.
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.

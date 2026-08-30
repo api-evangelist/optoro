@@ -1,0 +1,295 @@
+openapi: 3.2.0
+info:
+  title: Facilities API
+  version: '2024-08-08'
+  contact:
+    name: Stores RP Fulfillment
+  description: '## Introduction
+
+    The Facilities API enables seamless integration with Optoro''s platform to ensure that facility information is synchronized and up-to-date across all services in the Store Solution.
+
+    '
+servers:
+- url: https://facilities.optiturn.com
+  description: Production
+- url: https://facilities.sandbox.optiturn.com
+  description: Sandbox
+tags:
+- name: Facilities
+paths:
+  /facilities:
+    post:
+      summary: Create / Update Facility
+      description: 'This endpoint allows for creating or updating a facility. If a facility with the provided identifier already exists, it will be updated with the new information provided in the payload. Otherwise, a new facility record is created.
+
+        '
+      operationId: upsertFacility
+      security:
+      - oAuth2: []
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                facility:
+                  $ref: '#/components/schemas/facility'
+      responses:
+        '200':
+          description: Facility created or updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  facility:
+                    type: object
+                    description: Facility attributes.
+                    properties:
+                      group_identifier:
+                        type:
+                        - string
+                        - 'null'
+                        description: Identifier for the facility's group.
+                        example: network_id
+                      identifier:
+                        type: string
+                        description: Unique identifier for the facility.
+                        example: location_id
+                      name:
+                        type: string
+                        description: Name of the facility.
+                        example: location_name
+                      address:
+                        type: object
+                        description: Address of the facility.
+                        properties:
+                          name:
+                            type: string
+                            description: Name for the address.
+                            example: Facility ABC
+                          street:
+                            type: string
+                            description: Street line 1 of the address.
+                            example: 123 Main St
+                          street2:
+                            type: string
+                            description: Street line 2 of the address.
+                            example: 123 Main St
+                          city:
+                            type: string
+                            description: City of the address.
+                            example: Anytown
+                          state:
+                            type: string
+                            description: State of the address.
+                            example: CA
+                          zip:
+                            type: string
+                            description: Zip code of the address.
+                            example: '12345'
+                          phone:
+                            type: string
+                            description: Phone number of the address.
+                            example: '2125554567'
+                          country:
+                            type: string
+                            description: Country of the address.
+                            example: US
+                        additionalProperties: false
+                      details:
+                        type: object
+                        description: Any additional data for facility
+                      latitude:
+                        type: number
+                        description: Facility latitude.
+                        example: 32.94
+                      longitude:
+                        type: number
+                        description: Facility longitude.
+                        example: -97.13
+                      facility_type:
+                        type: string
+                        description: Type of facility (e.g., STR, COM).
+                        example: location_type
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Timestamp when the facility was created.
+                        example: '2024-08-08T18:05:44.128Z'
+                      updated_at:
+                        type: string
+                        format: date-time
+                        description: Timestamp when the facility was updated.
+                        example: '2024-08-08T18:05:44.128Z'
+                    additionalProperties: false
+                    required:
+                    - identifier
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailure'
+              examples:
+                missingField:
+                  summary: The request omitted a required field.
+                  value:
+                    message: Validation Failed
+                    errors:
+                    - field: identifier
+                      code: invalid_data
+                      message: identifier cannot be blank
+                invalidType:
+                  summary: The request contained a field with an invalid type.
+                  value:
+                    message: Validation Failed
+                    errors:
+                    - field: latitude
+                      code: invalid_data
+                      message: latitude4.9734435 is invalid
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+      tags:
+      - Facilities
+components:
+  schemas:
+    facility:
+      type: object
+      description: Facility attributes
+      properties:
+        group_identifier:
+          type:
+          - string
+          - 'null'
+          description: Identifier for the facility's group.
+          example: network_id
+        identifier:
+          type: string
+          description: Unique identifier for the facility.
+          example: location_id
+        name:
+          type: string
+          description: Name of the facility.
+          example: location_name
+        address:
+          type: object
+          description: Address of the facility.
+          properties:
+            name:
+              type: string
+              description: Name for the address.
+              example: Facility ABC
+            street:
+              type: string
+              description: Street line 1 of the address.
+              example: 123 Main St
+            street2:
+              type: string
+              description: Street line 2 of the address.
+              example: 123 Main St
+            city:
+              type: string
+              description: City of the address.
+              example: Anytown
+            state:
+              type: string
+              description: State of the address.
+              example: CA
+            zip:
+              type: string
+              description: Zip code of the address.
+              example: '12345'
+            phone:
+              type: string
+              description: Phone number of the address.
+              example: '2125554567'
+            country:
+              type: string
+              description: Country of the address.
+              example: US
+          additionalProperties: false
+        details:
+          type: object
+          description: Any additional data for facility
+        latitude:
+          type: number
+          description: Facility latitude.
+          example: 32.94
+        longitude:
+          type: number
+          description: Facility longitude.
+          example: -97.13
+        facility_type:
+          type: string
+          description: Type of facility (e.g., STR, COM).
+          example: location_type
+      additionalProperties: false
+      required:
+      - identifier
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            - message
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid_data'.
+                enum:
+                - invalid_data
+                - not_found
+              message:
+                type: string
+                description: Human-readable description of the validation failure.
+  responses:
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+
+        '
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+  parameters:
+    api-version:
+      name: Optiturn-Facilities-Version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '2024-08-08'
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}

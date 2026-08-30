@@ -1,0 +1,451 @@
+openapi: 3.2.0
+info:
+  title: Drop Ship Listings API
+  version: '6.0'
+  contact:
+    name: Fulfillment'
+  description: 'The Drop Shipping API enables customers to fulfill orders for available units and lots that are in stock in the Optoro RMS.
+
+    '
+servers:
+- url: https://drop-ship.optiturn.com
+  description: Production
+- url: https://drop-ship.sandbox.optiturn.com
+  description: Sandbox
+tags:
+- name: Listings
+paths:
+  /listings:
+    get:
+      summary: List listings
+      description: 'Results from the listings endpoint are paginated and the subset of listings that are returned are based on the page and per_page parameters supplied in the request. The total count of records in the set is returned in the response header record_count. This can be used to calculate the number of pages that need to be retrieved to get all records.
+
+        '
+      operationId: listingsIndex
+      tags:
+      - Listings
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: updated_at
+        in: query
+        required: true
+        description: 'Last updated time in ISO 8601 format, UTC. updated_at value should not be older than 3 months.
+
+          '
+        schema:
+          type: string
+          format: date-time
+          example: '2023-01-01T17:27:46'
+      - name: channel
+        in: query
+        required: true
+        description: 'Filter listings by Inventory channel name.
+
+          '
+        schema:
+          type: string
+          example: rts_drop_ship
+      - name: condition
+        in: query
+        required: false
+        description: 'Filter listings by condition code.
+
+          '
+        schema:
+          type: string
+          enum:
+          - N
+          - A
+          - B
+          - R
+      - name: page
+        in: query
+        description: The page of results to retrieve; If page number is above maximum an empty result set will be returned.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: per_page
+        in: query
+        description: This allows control over the amount of results returned per page.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 100
+      responses:
+        '200':
+          description: A list of listings of units and lots. The total number of records in the set will be in the response header record_count.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/listing'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Description of the error message
+                    example: Invalid request parameters
+              examples:
+                invalidPage:
+                  summary: Invalid Type for Page
+                  value:
+                    message: Invalid page
+                invalidPerPage:
+                  summary: Invalid Type for Per Page
+                  value:
+                    message: Invalid per_page
+                invalidUpdatedAt:
+                  summary: Invalid Type for Updated At
+                  value:
+                    message: Invalid updated_at date
+                missingField:
+                  summary: The request omitted a required field.
+                  value:
+                    status: 400
+                    error: Bad Request
+                    exception: '#<ActionController::ParameterMissing: param is missing or the value is empty: <field>>'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message if the request is unprocessable.
+                    example: Invalid updated_at date; should not be older than 3 months
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /listings/{id}:
+    get:
+      summary: Show listings by identifier
+      description: 'Returns the listing details for the listing that matches the identifier that is included in the query parameters.
+
+        '
+      operationId: listingsShow
+      tags:
+      - Listings
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        required: true
+        description: 'The SKU or client identifier for the desired listing.
+
+          '
+        schema:
+          type: string
+          example: S11727
+      - name: condition
+        in: query
+        required: true
+        description: 'Condition code.
+
+          '
+        schema:
+          type: string
+          enum:
+          - N
+          - A
+          - B
+          - R
+      - name: channel
+        in: query
+        required: false
+        description: 'Inventory channel name. Gives out the particular listing if there are multiple sku-channel combinations.
+
+          '
+        schema:
+          type: string
+          example: rts_drop_ship
+      responses:
+        '200':
+          description: Returns the listing details for the listing that matches the identifier that is included in the query parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listing:
+                    $ref: '#/components/schemas/listing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update Listing quantity
+      description: 'Tell the drop ship service that the client system does not want some amount of this inventory anymore available on this channel.
+
+        '
+      operationId: listingsUpdate
+      tags:
+      - Listings
+      parameters:
+      - $ref: '#/components/parameters/api-version'
+      - name: id
+        in: path
+        required: true
+        description: 'The SKU or client identifier for the desired listing.
+
+          '
+        schema:
+          type: string
+          example: S11727
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                condition:
+                  type: string
+                  description: Condition code.
+                  enum:
+                  - N
+                  - A
+                  - B
+                  - R
+                channel:
+                  type: string
+                  description: Inventory channel name
+                  example: rts_drop_ship
+                quantity:
+                  type: integer
+                  description: Quantity of units or lots available. This will always be 1 for lots
+                  example: 1
+      responses:
+        '200':
+          description: Returns the listing details for the listing that matches the identifier that is included in the query parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Listing quantity updated
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Validation error. Fix request payload and try again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Optoro response will be 422 code with message if the request is unprocessable.
+                    example: 'Requested quantity should be less than current listing quantity: 4'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    listing:
+      type: object
+      description: Listing attributes
+      properties:
+        identifier:
+          type: string
+          description: SKU or the lot name (i.e. CSAA12345) associated with the listing, used to link the order item to a listing. This is what the client will send back to us in the order item object to denote what needs to be shipped.
+          example: S11727
+        condition:
+          type: string
+          description: Condition code.
+          enum:
+          - N
+          - A
+          - B
+          - R
+        channel:
+          type: string
+          description: Inventory channel name
+          example: rts_drop_ship
+        quantity:
+          type: integer
+          description: Quantity of units or lots available. This will always be 1 for lots
+          example: 1
+        lot:
+          $ref: '#/components/schemas/lot'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+      additionalProperties: false
+      required:
+      - identifier
+      - quantity
+      - condition
+      - channel
+    lot:
+      type: object
+      description: Lot information from the lot object
+      properties:
+        warehouse_name:
+          type: string
+          description: Warehouse name where the pallet is shipping from
+          example: Warehouse A
+        template_name:
+          type: string
+          description: Name of the sorting template in directed sort
+          example: template
+        photo_urls:
+          type: array
+          items:
+            type: string
+          description: Photo URLs for the lot
+          example:
+          - test_image.com
+          - example_image.com
+        weight:
+          type: number
+          description: Weight of the lot in pounds
+          example: 1.5
+        manifest_items:
+          type: array
+          description: Items in the manifest
+          items:
+            $ref: '#/components/schemas/manifest_item'
+        created_at:
+          type: string
+          format: date-time
+          description: Date created in ISO 8601 format in UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Date last updated in ISO 8601 format in UTC
+      additionalProperties: false
+      required:
+      - template_name
+      - weight
+      - manifest_items
+      - created_at
+      - updated_at
+    manifest_item:
+      type: object
+      description: Manifest item attributes
+      properties:
+        identifier:
+          type: string
+          description: System identifier for the individual unit (this should be the LP)
+          example: ITEM-PTAA760-1
+        item_title:
+          type: string
+          description: Title of the item
+          example: TITLE-PTAA760-1
+        condition:
+          type: string
+          description: Condition of the item
+          example: new
+        manufacturer:
+          type: string
+          description: Manufacturer manifest item belongs to
+          example: Dooley and Sons
+        upc:
+          type: string
+          description: Item UPC
+          pattern: ^[0-9]{8}([0-9]{4,6})?$
+          example: 0123456789012
+        sku:
+          type: string
+          description: Item SKU
+          example: SKU-PTAA760-1
+        program_identifier:
+          type: string
+          description: Program identifier
+          example: client-ecom-returns
+        category_lineage:
+          type: array
+          items:
+            type: object
+            description: Category lineage attributes
+            properties:
+              id:
+                type: number
+                description: The category's database primary key. Do not rely on this value!
+                example: 45668
+              name:
+                type: string
+                description: Name of the category
+                example: ELECTRONICS
+              parent:
+                type: number
+                description: Indicates the ID of the parent category in the lineage
+                example: 78536
+              external_identifier:
+                type: string
+                description: External identifier provided for the category
+                example: electronics-8085
+          description: Array representing the category lineage
+        vendor_name:
+          type: string
+          description: Vendor name
+          example: Magpie Electricals
+        vendor_identifier:
+          type: string
+          description: External identifier provided for the vendor
+          example: magpie-electricals
+      additionalProperties: false
+      required:
+      - identifier
+      - item_title
+      - upc
+      - sku
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Not Authorized
+    NotFound:
+      description: Not Found
+    BadRequest:
+      description: Bad Request
+  parameters:
+    api-version:
+      name: api-version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '6'
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.optiturn.com/oauth/token
+          scopes: {}
