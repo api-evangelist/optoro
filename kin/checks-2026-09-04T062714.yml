@@ -1,17 +1,17 @@
 ---
 kin_checks:
   slug: optoro
-  schema_version: 0.17.2
-  scored_at: '2026-09-01'
-  run_ts: 2026-09-01T063623
+  schema_version: 0.18.2
+  scored_at: '2026-09-04'
+  run_ts: 2026-09-04T062714
   note: Actionable checks only (missed + partial). earned/na are every other check
-    in rubric/scoring-0.17.2.yml; counts below let you verify that.
+    in rubric/scoring-0.18.2.yml; counts below let you verify that.
   counts:
-    total: 130
+    total: 132
     earned: 47
-    partial: 20
+    partial: 21
     missed: 39
-    na: 24
+    na: 25
   checks:
   - id: well_known_published
     status: missed
@@ -23,6 +23,8 @@ kin_checks:
   - id: webhooks_or_callbacks
     status: missed
     detail: 0 of 21 openapi documents pass
+  - id: inbound_contract_published
+    status: missed
   - id: json_schema_present
     status: missed
   - id: json_schema_per_resource
@@ -32,8 +34,6 @@ kin_checks:
   - id: json_ld_class_depth
     status: missed
   - id: json_ld_property_depth
-    status: missed
-  - id: lifecycle_documented
     status: missed
   - id: domain_standard_conformance
     status: missed
@@ -74,7 +74,7 @@ kin_checks:
     status: missed
   - id: finops_mapped
     status: missed
-  - id: reversibility_documented
+  - id: mcp_server
     status: missed
   - id: idempotency
     status: missed
@@ -104,7 +104,7 @@ kin_checks:
     detail: 16 of 21 openapi documents pass
   - id: servers_resolvable
     status: partial
-    earned: 3.53
+    earned: 3.81
   - id: operations_description_coverage
     status: partial
     earned: 4.57
@@ -136,6 +136,9 @@ kin_checks:
     status: partial
     earned: 2.86
     detail: 15 of 21 openapi documents pass
+  - id: lifecycle_documented
+    status: partial
+    earned: 0.8
   - id: github_org_present
     status: partial
     earned: 1.0
@@ -151,9 +154,9 @@ kin_checks:
     status: partial
     earned: 2.5
     detail: 'authorship: derived'
-  - id: mcp_server
+  - id: reversibility_documented
     status: partial
-    earned: 1.2
+    earned: 2.4
     detail: 'grade: documented'
   - id: auth_clarity
     status: partial
