@@ -67,32 +67,6 @@ tags_raw:
 - webhooks
 - order-management
 apis:
-- aid: optoro:optoro-asns-api
-  name: Optoro Asns API
-  description: The Asns API from Optoro — 2 operation(s) for asns.
-  humanURL: https://developer.optoro.com/openapi/auth/openapi
-  baseURL: https://auth.optiturn.com
-  tags:
-  - ASNs
-  tags_raw:
-  - Asns
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-asns-api-openapi.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/api_overview
-  - type: Authentication
-    url: authentication/optoro-authentication.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/rm_integration_guide
-  - type: OAuthScopes
-    url: scopes/optoro-scopes.yml
-  - type: Webhooks
-    url: asyncapi/optoro-webhooks.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/rx_integration_guide
-  - type: Documentation
-    url: https://developer.optoro.com/content/webhooks
 - aid: optoro:optoro-catalog-entry-updates-api
   name: Optoro Catalog Entry Updates API
   description: The Catalog Entry Updates API from Optoro — 1 operation(s) for catalog entry updates.
@@ -387,32 +361,6 @@ apis:
     url: https://developer.optoro.com/content/rx_integration_guide
   - type: Documentation
     url: https://developer.optoro.com/content/webhooks
-- aid: optoro:optoro-oauth-api
-  name: Optoro OAUTH API
-  description: The Oauth API from Optoro — 1 operation(s) for oauth.
-  humanURL: https://developer.optoro.com/openapi/auth/openapi
-  baseURL: https://auth.optiturn.com
-  tags:
-  - Authentication
-  tags_raw:
-  - Oauth
-  properties:
-  - type: OpenAPI
-    url: openapi/optoro-oauth-api-openapi.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/api_overview
-  - type: Authentication
-    url: authentication/optoro-authentication.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/rm_integration_guide
-  - type: OAuthScopes
-    url: scopes/optoro-scopes.yml
-  - type: Webhooks
-    url: asyncapi/optoro-webhooks.yml
-  - type: Documentation
-    url: https://developer.optoro.com/content/rx_integration_guide
-  - type: Documentation
-    url: https://developer.optoro.com/content/webhooks
 - aid: optoro:optoro-orders-api
   name: Optoro Orders API
   description: The Orders API from Optoro — 3 operation(s) for orders.
@@ -571,6 +519,54 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/optoro-vendor-updates-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-asns-api
+  name: Optoro Asns API
+  description: The Asns API from Optoro — 2 operation(s) for asns.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Asns
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-asns-api-openapi.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/api_overview
+  - type: Authentication
+    url: authentication/optoro-authentication.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rm_integration_guide
+  - type: OAuthScopes
+    url: scopes/optoro-scopes.yml
+  - type: Webhooks
+    url: asyncapi/optoro-webhooks.yml
+  - type: Documentation
+    url: https://developer.optoro.com/content/rx_integration_guide
+  - type: Documentation
+    url: https://developer.optoro.com/content/webhooks
+- aid: optoro:optoro-oauth-api
+  name: Optoro OAUTH API
+  description: The Oauth API from Optoro — 1 operation(s) for oauth.
+  humanURL: https://developer.optoro.com/openapi/auth/openapi
+  baseURL: https://auth.optiturn.com
+  tags:
+  - Oauth
+  properties:
+  - type: OpenAPI
+    url: openapi/optoro-oauth-api-openapi.yml
   - type: Documentation
     url: https://developer.optoro.com/content/api_overview
   - type: Authentication
