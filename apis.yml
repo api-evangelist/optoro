@@ -539,6 +539,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - ASNs
+  tags_raw:
   - Asns
   properties:
   - type: OpenAPI
@@ -563,6 +565,8 @@ apis:
   humanURL: https://developer.optoro.com/openapi/auth/openapi
   baseURL: https://auth.optiturn.com
   tags:
+  - Authentication
+  tags_raw:
   - Oauth
   properties:
   - type: OpenAPI
