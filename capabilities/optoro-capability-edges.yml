@@ -11,8 +11,20 @@ capability_model:
   attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
     CC BY 4.0
   notice: NOTICE
-edge_count: 6
+edge_count: 8
 edges:
+- tag: Catalog Entry Updates
+  spec_file: optoro-catalog-entry-updates-api-openapi.yml
+  capability_id: BC-2370.10
+  capability_id_l1: BC-2370
+  capability_name: Item Master Data Management
+  confidence: 0.8
+  evidence: '"integration between your product merchandising system and Optoro''s platform. This ensures
+    that all catalog entries are up to date with the highest quality product information"; POST /catalog_entry_updates
+    "Create / Update Catalog Entry", schema "sku"'
+  reason: The single operation maintains canonical product/SKU attribute records fed from the merchandising
+    system — item master data management under Product Information Management.
+  recovered_from: vertical-retail-consumer-goods-edges.json
 - tag: Dispositions
   spec_file: optoro-dispositions-api-openapi.yml
   capability_id: BC-2460.50
@@ -61,6 +73,17 @@ edges:
   evidence: '"Perform a bin-change for a unit or a location." schemas: Location, LocationBinChange, Unit,
     UnitBinChange'
   reason: Warehouse bin/location movement of units — in-house storage operations (slotting, location management).
+- tag: Orders
+  spec_file: optoro-orders-api-openapi.yml
+  capability_id: BC-2330.30
+  capability_id_l1: BC-2330
+  capability_name: Distributed Order Fulfilment Management
+  confidence: 0.7
+  evidence: '"Drop Ship Orders API" — "enables customers to fulfill orders for available units and lots
+    that are in stock"; operations "Create an order", "Cancel an order by identifier"'
+  reason: Order capture and lifecycle for drop-ship fulfilment of returned/excess inventory, matching
+    distributed/vendor drop-ship fulfilment. Some ambiguity versus generic order fulfilment management.
+  recovered_from: vertical-retail-consumer-goods-edges.json
 - tag: Rmas
   spec_file: optoro-rmas-api-openapi.yml
   capability_id: BC-2460.50
