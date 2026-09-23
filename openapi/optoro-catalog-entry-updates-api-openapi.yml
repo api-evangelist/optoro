@@ -2,7 +2,9 @@ openapi: 3.2.0
 info:
   title: Catalogs Catalog Entry Updates API
   version: '2023-08-01'
-  description: "## Introduction\nThe Catalogs API provides an easy, seamless integration between your product merchandising system and Optoro's platform. This ensures that all catalog entries are up to date with the highest quality product information. Optoro can then disposition and route returned items, ensuring retailers receive maximum recovery at the highest possible velocity.\n## Data Handling\nThe Catalogs API is intended to be updated in real time from your merchandising system. For large, initial catalog data transfers, Optoro recommends a CSV file transfer. For ongoing maintenance, Optoro recommends utilizing the Catalogs API.\nWhen submitting catalog data, Optoro will perform minimal validation. Data sent to the API will be treated as accurate. Null or empty values will be saved and can overwrite previously submitted data. If this is not desired then omit the field from the update request.\n## Custom Fields\nYou may submit additional product fields to the Catalogs API. These fields will be made available for dispositioning, routing, reporting, and other decision making within OptiTurn.\nFor example, if you have products that are customizable, you might include a `customizable` boolean field in your catalog updates. This field could then be used to route customizable items to the appropriate channel.\nYou must work with Optoro's Client Success team to configure this feature.\n## Change Log\n### Version 2023-08-01\n* FEATURE: The `catalog_entry_updates` endpoint now accepts a `product_identifiers` field. This enables the following:\n  * UPCs no longer have length validations.\n  * Multiple ASINs can be associated with the same catalog entry.\n  * UPCs can now be associated with multiple catalog entries.\n  * Update behavior can be specified: either append or replace existing UPCs/ASINs.\n* BREAKING: The `upc`, `upcs`, and `asin` fields are no longer accepted by the `catalog_entry_updates` endpoint. * BREAKING: `allowed_channels` and `disallowed_channels` are truly mutually exclusive on the\n  `catalog_entry_updates` endpoint.\n"
+  description: '## Introduction
+
+    The Catalogs API provides an easy, seamless integration between your product merchandising system and Optoro''s platform.'
 servers:
 - url: https://catalogs.optiturn.com
   description: Production
@@ -14,9 +16,7 @@ paths:
   /catalog_entry_updates:
     post:
       summary: Create / Update Catalog Entry
-      description: 'A catalog entry is identified by its SKU. If the Catalogs API cannot locate the SKU, a new catalog entry is created. If the SKU is located, the catalog entry is updated with the provided payload.
-
-        '
+      description: A catalog entry is identified by its SKU. If the Catalogs API cannot locate the SKU, a new catalog entry is created. If the SKU is located, the catalog entry is updated with the provided payload.
       operationId: catalogEntryUpdate
       security:
       - oAuth2: []
@@ -657,6 +657,25 @@ paths:
       tags:
       - Catalog Entry Updates
 components:
+  responses:
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+
+        '
+  parameters:
+    versionHeader:
+      name: Optiturn-Catalogs-Version
+      in: header
+      description: 'The version of the API to use. Must specify ''2023-08-01'' to use the current API version. Defaults to ''2018-05-10'' if omitted.
+
+        '
+      required: true
+      schema:
+        type: string
   schemas:
     sku:
       type: string
@@ -694,25 +713,6 @@ components:
               message:
                 type: string
                 description: Human-readable description of the validation failure.
-  responses:
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
-
-        '
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
-    BadRequest:
-      description: Malformed request. Check structure of JSON payload.
-  parameters:
-    versionHeader:
-      name: Optiturn-Catalogs-Version
-      in: header
-      description: 'The version of the API to use. Must specify ''2023-08-01'' to use the current API version. Defaults to ''2018-05-10'' if omitted.
-
-        '
-      required: true
-      schema:
-        type: string
   securitySchemes:
     oAuth2:
       type: oauth2

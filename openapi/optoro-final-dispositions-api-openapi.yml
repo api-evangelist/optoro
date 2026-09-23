@@ -6,13 +6,7 @@ info:
     name: Fulfillment
   description: '## Introduction
 
-    The Final Disposition API is used to communicate to the client the final state, or disposition, of a unit when it leaves the ROP and is placed in its highest possible value disposition.  For example, an unused, open box unit being returned to stock as a final disposition.
-
-    ## Failure Handling
-
-    <p>When Optoro receives a 401 HTTP status, Optoro will request a new Authentication Token from the client’s services and retry the request.</p> <p>When Optoro receives any other error (as described above and identified by a 4xx (not 401) or 5xx range http status code) Optoro will retry five times with the same message.  The retries will happen at an exponential backoff cadence in order not to overload machines.  If the failure persists, the message will be stored in a failure queue and Optoro will have a technical contact person reach out to client tech support to report a problem.  When the problem has been resolved, Optoro can manually retry failed requests.</p> <p>For Final Disposition acknowledgement, all errors are handled the same since this is not in a user facing flow.  However, the differentiation of status codes will help Optoro when reporting an issue.</p>
-
-    '
+    The Final Disposition API is used to communicate to the client the final state, or disposition, of a unit when it leaves the ROP and is placed in its highest possible value disposition.'
 servers:
 - url: https://developer.optoro.com
 tags:
@@ -22,9 +16,9 @@ paths:
     post:
       summary: POST a unit's final disposition
       operationId: final_dispositions
-      description: 'Client endpoint to which final disposition update is posted to. <br>This endpoint along with any authentication mechanisms needed must be communicated to client’s account manager.
+      description: 'Client endpoint to which final disposition update is posted to.
 
-        '
+        This endpoint along with any authentication mechanisms needed must be communicated to client’s account manager.'
       requestBody:
         required: true
         content:
@@ -60,14 +54,14 @@ paths:
       - Final Dispositions
 components:
   responses:
+    BadRequest:
+      description: Bad Request
+    ServerUnavailable:
+      description: Client Server Unavailable
     InternalServerError:
       description: Internal Server Error
     Unauthorized:
       description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
-    ServerUnavailable:
-      description: Client Server Unavailable
-    BadRequest:
-      description: Bad Request
   schemas:
     ValidationFailure:
       type: object

@@ -2,16 +2,14 @@ openapi: 3.2.0
 info:
   title: OAUTH API
   version: 1.0.0
-  description: 'The Auth API provides access to other Optoro APIs using the [OAuth 2.0](https://oauth.net/2/) client credentials flow. Optoro''s Client Success team will provide the credentials used when requesting an access token. The access token returned from the oauth/tokens endpoint will be used in subsequent requests to Optoro APIs.
-
-    '
+  description: The Auth API provides access to other Optoro APIs using the OAuth 2.0 client credentials flow. Optoro's Client Success team will provide the credentials used when requesting an access token. The access token returned from the oauth/tokens endpoint will be used in subsequent requests to Optoro APIs.
 servers:
 - url: https://auth.optiturn.com
   description: Production
 - url: https://auth.sandbox.optiturn.com
   description: Sandbox
 tags:
-- name: Oauth
+- name: OAuth
 paths:
   /oauth/token:
     post:
@@ -99,7 +97,7 @@ paths:
         5XX:
           $ref: '#/components/responses/InternalServerError'
       tags:
-      - Oauth
+      - OAuth
 components:
   responses:
     NotFound:

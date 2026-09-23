@@ -7,9 +7,7 @@ info:
     **When it is used:**
 
 
-    - Optoro sends an **Exchange Variants** GET message to you when the shopper chooses a return reason that prompts the returns portal to show exchange options for an item that has an associated variant identifier.
-
-    '
+    - Optoro sends an **Exchange Variants** GET message to you when the shopper chooses a return reason that prompts the returns portal to show exchange options for an item that has an associated variant identifier.'
   version: 1.0.0
 tags:
 - name: Sku
@@ -48,14 +46,6 @@ paths:
       - Sku
 components:
   schemas:
-    variants:
-      type: object
-      properties:
-        variants:
-          description: Array of product variants for the parent item.
-          type: array
-          items:
-            $ref: '#/components/schemas/variant'
     variant:
       required:
       - attributes
@@ -110,3 +100,11 @@ components:
           description: Product page link
           type: string
           example: https://example.com/fuzzy-green
+    variants:
+      type: object
+      properties:
+        variants:
+          description: Array of product variants for the parent item.
+          type: array
+          items:
+            $ref: '#/components/schemas/variant'

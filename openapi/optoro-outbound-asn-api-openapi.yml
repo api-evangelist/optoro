@@ -1,24 +1,7 @@
 openapi: 3.2.0
 info:
   title: Outbound Asn API
-  description: 'The Outbound ASN API allows clients to be notified when a shipment is leaving the Optoro WMS.
-
-    This allows clients to notify other systems so that the inventory can be received at the destination.
-
-
-    For very large shipments or pallets multiple ASNs may be sent. Your systems should expect to receive multiple messages for a single carton. Each message will have a unique asn number though.
-
-
-    ## Failure Handling
-
-
-    <p>When Optoro receives a 401 HTTP status, Optoro will request a new Authentication Token from the client’s services and retry the request.</p>
-
-    <p>When Optoro receives any other error (as described above and identified by a 4xx (not 401) or 5xx range http status code) Optoro will retry five times with the same message.  The retries will happen at an exponential backoff cadence in order not to overload machines.  If the failure persists, the message will be stored in a failure queue and Optoro will have a technical contact person reach out to client tech support to report a problem.  When the problem has been resolved, Optoro can manually retry failed requests.</p>
-
-    <p>For Outbound ASN acknowledgement, all errors are handled the same since this is not in a user facing flow.  However, the differentiation of status codes will help Optoro when reporting an issue.</p>
-
-    '
+  description: The Outbound ASN API allows clients to be notified when a shipment is leaving the Optoro WMS.
   version: 1.0.0
 tags:
 - name: Outbound Asn
@@ -27,9 +10,9 @@ paths:
     post:
       summary: Outbound ASN Event
       operationId: outbound_asns
-      description: 'Client endpoint to which Outbound ASN is posted to. <br/>This endpoint along with any authentication mechanisms needed must be communicated to client''s account manager.
+      description: 'Client endpoint to which Outbound ASN is posted to.
 
-        '
+        This endpoint along with any authentication mechanisms needed must be communicated to client''s account manager.'
       requestBody:
         required: true
         content:
@@ -191,6 +174,44 @@ paths:
       - Outbound Asn
 components:
   schemas:
+    address:
+      type: object
+      description: The address this shipment is going to. See below for fields.
+      required:
+      - name
+      - street
+      - state
+      - city
+      - zip
+      properties:
+        name:
+          type: string
+          description: The address to name.
+          example: Bliss Diamond
+        company:
+          type: string
+          description: The address company line (under name)
+          example: Acme
+        street:
+          type: string
+          description: The street address.
+          example: 6001 N Dr South
+        street2:
+          type: string
+          description: An optional second line for the street address, for suite or other similar additions.
+          example: 60 N Dr North
+        city:
+          type: string
+          description: The city for this address.
+          example: LIBERTYVILLE
+        state:
+          type: string
+          description: The state for this address.
+          example: OH
+        zip:
+          type: string
+          description: The zip code for this address.
+          example: '43125'
     reference:
       type: object
       description: Reference to a Stock Transfer Order, Return Authorization, RMA, Forward Order or Returns Portal Order which can be used to reconcile against. See below for fields.
@@ -304,41 +325,3 @@ components:
             type: string
             description: Name of the last assigned directed sorting template to this carton
             example: Disposable Items
-    address:
-      type: object
-      description: The address this shipment is going to. See below for fields.
-      required:
-      - name
-      - street
-      - state
-      - city
-      - zip
-      properties:
-        name:
-          type: string
-          description: The address to name.
-          example: Bliss Diamond
-        company:
-          type: string
-          description: The address company line (under name)
-          example: Acme
-        street:
-          type: string
-          description: The street address.
-          example: 6001 N Dr South
-        street2:
-          type: string
-          description: An optional second line for the street address, for suite or other similar additions.
-          example: 60 N Dr North
-        city:
-          type: string
-          description: The city for this address.
-          example: LIBERTYVILLE
-        state:
-          type: string
-          description: The state for this address.
-          example: OH
-        zip:
-          type: string
-          description: The zip code for this address.
-          example: '43125'

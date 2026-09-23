@@ -6,25 +6,7 @@ info:
     name: Fulfillment
   description: '## Introduction
 
-    The Drop Ship is used to communicate to the client once an order has been shipped or cancelled from OptiTurn, to close an order within the client''s OMS.
-
-    ### Post Confirmation:
-
-    The Drop Shipment Confirmation API is used to post a shipment confirmation for the orders shipped so that the client can close the order on their end. Optoro can POST a shipment confirmation to the client endpoint.
-
-    ### Post Cancellation:
-
-    The Drop Shipment Cancellation API is used to post a cancelled order to a client endpoint. An order could be rejected or cancelled in the warehouse, due to the inventory not being found or it being damaged.
-
-    ### Post Partial Cancellation:
-
-    The Drop Shipment Partial Cancellation API is used to post a partially cancelled order to a client endpoint. An order item could be cancelled in the warehouse, due to the inventory is not being found or damaged.
-
-    ## Failure Handling
-
-    <p>When Optoro receives a 401 HTTP status, Optoro will request a new Authentication Token from the client''s services and retry the request.</p> <p>When Optoro receives any other error (as described above and identified by a 4xx (not 401) or 5xx range http status code) Optoro will retry five times with the same message.  The retries will happen at an exponential backoff cadence in order not to overload machines.  If the failure persists, the message will be stored in a failure queue and Optoro will have a technical contact person reach out to client tech support to report a problem.  When the problem has been resolved, Optoro can manually retry failed requests.</p> <p>For Drop Shipment acknowledgement, all errors are handled the same since this is not in a user facing flow.  However, the differentiation of status codes will help Optoro when reporting an issue.</p>
-
-    '
+    The Drop Ship is used to communicate to the client once an order has been shipped or cancelled from OptiTurn, to close an order within the client''s OMS.'
 servers:
 - url: https://developer.optoro.com
 tags:
@@ -36,9 +18,8 @@ paths:
       operationId: drop_shipment_cancellation
       description: 'Client endpoint to which Drop Shipment Cancellation data is posted to.
 
-        <br>This endpoint along with any authentication mechanisms needed must be communicated to client''s account manager.
 
-        '
+        This endpoint along with any authentication mechanisms needed must be communicated to client''s account manager.'
       requestBody:
         required: true
         content:
@@ -74,14 +55,14 @@ paths:
       - Drop Shipment Cancellation
 components:
   responses:
+    BadRequest:
+      description: Bad Request
+    ServerUnavailable:
+      description: Client Server Unavailable
     InternalServerError:
       description: Internal Server Error
     Unauthorized:
       description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
-    ServerUnavailable:
-      description: Client Server Unavailable
-    BadRequest:
-      description: Bad Request
   schemas:
     ValidationFailure:
       type: object

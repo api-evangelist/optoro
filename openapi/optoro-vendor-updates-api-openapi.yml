@@ -2,13 +2,7 @@ openapi: 3.2.0
 info:
   version: 2.0.0
   title: RTV Vendor Vendor Updates API
-  description: 'Retailers typically have Return To Vendor (RTV) agreements with their suppliers that cover how much unsold or returned inventory can be returned to the supplier for a set refund. The Vendor API endpoint lets clients provide Optoro with data on their Return To Vendor agreements so Optoro can ensure these high value agreements are fully utilized as fast as possible.
-
-    The Vendor API allows the creation and modification of vendor data. This API is meant to update a single vendor record at a time.
-
-    The updates can also control the default eligibility of the vendor.
-
-    '
+  description: Retailers typically have Return To Vendor (RTV) agreements with their suppliers that cover how much unsold or returned inventory can be returned to the supplier for a set refund.
   contact:
     name: Returns Management - Storage
     email: returns-management@optoro.com
@@ -23,9 +17,7 @@ paths:
   /vendor_updates:
     post:
       summary: Create or update a vendor
-      description: 'A vendor is identified by its vendor identifier. If a vendor is found the vendor is updated with the provided data. If a vendor is not found, a new one is created.
-
-        '
+      description: A vendor is identified by its vendor identifier. If a vendor is found the vendor is updated with the provided data. If a vendor is not found, a new one is created.
       security:
       - oAuth2: []
       operationId: vendorUpdate

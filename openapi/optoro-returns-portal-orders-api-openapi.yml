@@ -1,19 +1,7 @@
 openapi: 3.2.0
 info:
   title: Returns Portal Orders API
-  description: 'Returns portal allows shoppers to create a return based on their order history. An online experience guides them through creating the return and provides the data needed to receive goods in a warehouse and process eligible refunds.
-
-
-    **When it is used:**
-
-
-    - You post a **Returns Portal Orders** message to Optoro with the full snapshot of the order at the first shipped event of the order. At initial implementation, orders for the previous six months (usually) are posted and then orders are posted as they ship.
-
-    - You post a **Returns Portal Orders** message to Optoro with the full snapshot of the order when order lifecycle events occur. This includes: fulfillments, transactions, adjustments, and order line item modifications. Updates should be as close to real time as possible.
-
-    - You post a **Returns Portal Orders** message to Optoro when the order and/or items within the order are refunded. However, when the order is an exchange one, you should not neccesarily receive refunds.
-
-    '
+  description: Returns portal allows shoppers to create a return based on their order history.
   version: 3.0.0
 servers:
 - url: https://orders.sandbox.optiturn.com
@@ -47,33 +35,6 @@ paths:
       - Returns Portal Orders
 components:
   schemas:
-    customer:
-      required:
-      - identifier
-      - email
-      description: Customer who placed order.
-      type: object
-      properties:
-        identifier:
-          description: Reference to customer record in your OMS
-          type: string
-          example: '123'
-        first_name:
-          description: Customer first name
-          type: string
-          example: Carmine
-        last_name:
-          description: Customer last name
-          type: string
-          example: Customer
-        email:
-          description: Customer contact email
-          type: string
-          example: customer@example.com
-        phone:
-          description: Customer phone
-          type: string
-          example: 202-555-1212
     order:
       required:
       - identifier
@@ -237,6 +198,88 @@ components:
           description: Order item identifier for product that has been refunded.
           type: string
           example: '123'
+    customer:
+      required:
+      - identifier
+      - email
+      description: Customer who placed order.
+      type: object
+      properties:
+        identifier:
+          description: Reference to customer record in your OMS
+          type: string
+          example: '123'
+        first_name:
+          description: Customer first name
+          type: string
+          example: Carmine
+        last_name:
+          description: Customer last name
+          type: string
+          example: Customer
+        email:
+          description: Customer contact email
+          type: string
+          example: customer@example.com
+        phone:
+          description: Customer phone
+          type: string
+          example: 202-555-1212
+    refund:
+      required:
+      - identifier
+      - refund_transactions
+      - total_refund_amount_cents
+      - refund_line_items
+      - created_at
+      type: object
+      properties:
+        identifier:
+          description: Unique identifier for the refund.
+          type: string
+          example: RF12554113
+        total_refund_amount_cents:
+          description: The total amount refunded for the returned items.
+          type: integer
+          format: int
+          minimum: 0
+        refund_line_items:
+          description: List of line items included in the refund.
+          type: array
+          items:
+            $ref: '#/components/schemas/refund_line_item'
+        note:
+          description: Description of the refund.
+          type: string
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        rma_identifier:
+          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
+          type: string
+          example: RMA12345
+        tags:
+          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
+          type: array
+          items:
+            type: string
+    returns_portal_orders:
+      type: object
+      required:
+      - returns_portal_order
+      properties:
+        returns_portal_order:
+          description: An orders object.
+          type: object
+          required:
+          - orders
+          properties:
+            orders:
+              description: Array of orders.
+              type: array
+              items:
+                $ref: '#/components/schemas/order'
     item:
       required:
       - identifier
@@ -358,21 +401,48 @@ components:
           description: Product weight, in lbs.
           type: number
           example: 2.2
-    payment_details:
+    address:
+      required:
+      - name
+      - street1
+      - city
+      - state
+      - zip_code
+      - country_code
       type: object
       properties:
-        avs_result_code:
-          description: Response code from credit card company for correct AVS
+        name:
+          description: Name of person.
           type: string
-        cvv_result_code:
-          description: Response code from credit card company for correct CVV
+          example: Carmine Customer
+        street1:
+          description: The street address.
           type: string
-        credit_card_company:
+          example: 123 Fake St.
+        street2:
+          description: An optional second line for the street address, for suite or other similar additions.
           type: string
-        gift_card_id:
+          example: STE 1200
+        city:
+          description: The city for this address.
           type: string
-        gift_card_code:
+          example: Utiopiannapolis
+        state:
+          description: The state or province for this address.
           type: string
+          example: WA
+        zip_code:
+          description: The zip or postal code for this address.
+          type: string
+          example: '99877'
+        country_code:
+          description: The country code for this address.
+          type: string
+          example: US
+        phone:
+          description: Phone number.
+          type: string
+          example: 202-555-1212
     discount:
       required:
       - identifier
@@ -514,48 +584,6 @@ components:
         country_code_of_origin:
           description: Used in conjunction with harmonized system code for International Returns
           type: string
-    address:
-      required:
-      - name
-      - street1
-      - city
-      - state
-      - zip_code
-      - country_code
-      type: object
-      properties:
-        name:
-          description: Name of person.
-          type: string
-          example: Carmine Customer
-        street1:
-          description: The street address.
-          type: string
-          example: 123 Fake St.
-        street2:
-          description: An optional second line for the street address, for suite or other similar additions.
-          type: string
-          example: STE 1200
-        city:
-          description: The city for this address.
-          type: string
-          example: Utiopiannapolis
-        state:
-          description: The state or province for this address.
-          type: string
-          example: WA
-        zip_code:
-          description: The zip or postal code for this address.
-          type: string
-          example: '99877'
-        country_code:
-          description: The country code for this address.
-          type: string
-          example: US
-        phone:
-          description: Phone number.
-          type: string
-          example: 202-555-1212
     transaction:
       required:
       - identifier
@@ -614,58 +642,18 @@ components:
           description: Additional details regarding gateway and transaction
           type: object
           $ref: '#/components/schemas/payment_details'
-    refund:
-      required:
-      - identifier
-      - refund_transactions
-      - total_refund_amount_cents
-      - refund_line_items
-      - created_at
+    payment_details:
       type: object
       properties:
-        identifier:
-          description: Unique identifier for the refund.
+        avs_result_code:
+          description: Response code from credit card company for correct AVS
           type: string
-          example: RF12554113
-        total_refund_amount_cents:
-          description: The total amount refunded for the returned items.
-          type: integer
-          format: int
-          minimum: 0
-        refund_line_items:
-          description: List of line items included in the refund.
-          type: array
-          items:
-            $ref: '#/components/schemas/refund_line_item'
-        note:
-          description: Description of the refund.
+        cvv_result_code:
+          description: Response code from credit card company for correct CVV
           type: string
-        created_at:
-          description: Creation date in ISO 8601 format, UTC.
+        credit_card_company:
           type: string
-          example: '2018-08-30T15:39:42.025Z'
-        rma_identifier:
-          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
+        gift_card_id:
           type: string
-          example: RMA12345
-        tags:
-          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
-          type: array
-          items:
-            type: string
-    returns_portal_orders:
-      type: object
-      required:
-      - returns_portal_order
-      properties:
-        returns_portal_order:
-          description: An orders object.
-          type: object
-          required:
-          - orders
-          properties:
-            orders:
-              description: Array of orders.
-              type: array
-              items:
-                $ref: '#/components/schemas/order'
+        gift_card_code:
+          type: string

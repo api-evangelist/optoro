@@ -4,9 +4,7 @@ info:
   version: '6.0'
   contact:
     name: Fulfillment'
-  description: 'The Drop Shipping API enables customers to fulfill orders for available units and lots that are in stock in the Optoro RMS.
-
-    '
+  description: The Drop Shipping API enables customers to fulfill orders for available units and lots that are in stock in the Optoro RMS.
 servers:
 - url: https://drop-ship.optiturn.com
   description: Production
@@ -18,9 +16,7 @@ paths:
   /shipments:
     get:
       summary: Lists shipments
-      description: 'Results from the shipments endpoint are paginated and the subset of shipments that are returned are based on the page and per_page parameters supplied in the request. The total count of records in the set is returned in the response header record_count. This can be used to calculate the number of pages that need to be retrieved to get all records.
-
-        '
+      description: Results from the shipments endpoint are paginated and the subset of shipments that are returned are based on the page and per_page parameters supplied in the request. The total count of records in the set is returned in the response header record_count. This can be used to calculate the number of pages that need to be retrieved to get all records.
       operationId: shipmentsIndex
       tags:
       - Shipments
@@ -193,13 +189,24 @@ paths:
         5XX:
           $ref: '#/components/responses/InternalServerError'
 components:
+  parameters:
+    api-version:
+      name: api-version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '6'
   responses:
+    BadRequest:
+      description: Bad Request
     InternalServerError:
       description: Internal Server Error
     Unauthorized:
       description: Not Authorized
-    BadRequest:
-      description: Bad Request
   schemas:
     shipment:
       type: object
@@ -279,17 +286,6 @@ components:
           type: string
           format: date-time
           description: Timestamp of most recent update iso8601 UTC
-  parameters:
-    api-version:
-      name: api-version
-      in: header
-      description: 'The version of the API to use.
-
-        '
-      required: true
-      schema:
-        type: string
-        example: '6'
   securitySchemes:
     oAuth2:
       type: oauth2

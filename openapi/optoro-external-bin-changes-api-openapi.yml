@@ -13,12 +13,10 @@ tags:
 paths:
   /external_bin_changes:
     post:
-      summary: Perform a bin-change for a unit or a location.
+      summary: Perform a bin-change for a unit or a location
       description: 'Performs a bin-change for a unit (identified by its LP) or a location (identified by its name). This will move
 
-        the unit/location from its current location into another location.
-
-        '
+        the unit/location from its current location into another location.'
       operationId: createExternalBinChange
       parameters:
       - $ref: '#/components/parameters/OptiturnExternalBinChangesVersion'
@@ -86,12 +84,10 @@ paths:
       - External Bin Changes
   /external_bin_changes/{id}:
     get:
-      summary: Show information that is relevant for bin-changing of a unit or location.
+      summary: Show information that is relevant for bin-changing of a unit or location
       description: 'Shows unit-level and location-level information of the item that should be bin-changed, most importantly
 
-        information about the directed sorting zone and slot for units.
-
-        '
+        information about the directed sorting zone and slot for units.'
       operationId: showExternalBinChange
       parameters:
       - name: id
@@ -212,19 +208,6 @@ components:
       description: Service is over capacity. Please try again later.
     InternalServerError:
       description: An internal error occured. Please contact Optoro for further guidance.
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token
-
-        from the auth service.
-
-        '
-      content:
-        application/json:
-          schema:
-            type: string
-            example: Not Authorized
-    ServiceUnavailable:
-      description: Service is unavailable and/or over capacity. Please try again later.
     BadRequest:
       description: The server cannot process the request due to a client error. Check the message and detail fields for further information.
       headers:
@@ -248,24 +231,31 @@ components:
             locationNotMovable:
               value:
                 error: Location 'CONVEYOR' cannot be moved.
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token
+
+        from the auth service.
+
+        '
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Not Authorized
+    ServiceUnavailable:
+      description: Service is unavailable and/or over capacity. Please try again later.
   schemas:
-    Location:
+    UnitBinChange:
       type: object
       properties:
-        type:
-          type: string
-          enum:
-          - location
-          example: location
         id:
           type: string
-          description: Name of the location
-          example: TOC-TN-0001
-        items:
-          type: array
-          description: Items contained in this location
-          items:
-            $ref: '#/components/schemas/Unit'
+          description: LP of a unit
+          example: LPCN786457
+        location_id:
+          type: string
+          description: Name of a location
+          example: CA-TN-0001
     LocationBinChange:
       type: object
       properties:
@@ -316,17 +306,30 @@ components:
               type: string
               description: Designated directed sorting slot for the unit
               example: RTS-SORT-SL1
-    UnitBinChange:
+    Location:
       type: object
       properties:
+        type:
+          type: string
+          enum:
+          - location
+          example: location
         id:
           type: string
-          description: LP of a unit
-          example: LPCN786457
-        location_id:
-          type: string
-          description: Name of a location
-          example: CA-TN-0001
+          description: Name of the location
+          example: TOC-TN-0001
+        items:
+          type: array
+          description: Items contained in this location
+          items:
+            $ref: '#/components/schemas/Unit'
+  headers:
+    Optiturn-External-Bin-Changes-Version:
+      description: Version of the External Bin Changes API
+      schema:
+        type: string
+        enum:
+        - '2023-05-01'
   parameters:
     OptiturnExternalBinChangesVersion:
       name: Optiturn-External-Bin-Changes-Version
@@ -337,13 +340,6 @@ components:
         enum:
         - '2023-05-01'
       required: true
-  headers:
-    Optiturn-External-Bin-Changes-Version:
-      description: Version of the External Bin Changes API
-      schema:
-        type: string
-        enum:
-        - '2023-05-01'
   securitySchemes:
     optoro_auth:
       type: http

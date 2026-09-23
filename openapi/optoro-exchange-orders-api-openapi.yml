@@ -1,7 +1,7 @@
 openapi: 3.2.0
 info:
   title: Exchange Orders API
-  description: "\nThe **Exchange Orders** API is used to place an order in your e-commerce platform when the shopper has chosen to exchange for a replacement item or receive their refund via a gift card.\nYour endpoint should handle all tax and shipping calculations.  The endpoint should be idempotent, using `original_order_id` as the key.  Only one exchange order can be placed against an `original_order_id`.\n\n**When it is used:**\n\n- Optoro POSTS an **Exchange Orders** message to you when the shopper has confirmed an exchange, selected a gift card refund, or both.\n\n#### Instant Exchange\nThis is an exchange of one or more items for a variant of the product (ex: different size, different color). This will be represented in the `items` array by an object like the following:\n\n```json\n{\n  \"sku\": \"888812345678\",\n  \"quantity\": 2,\n  \"title\": \"Fuzzy red t-shirt\",\n  \"unit_price_amount_cents\": 100,\n  \"product_amount_cents\": 200,\n  \"discount_amount_cents\": 20,\n  \"tax_amount_cents\": 100,\n  \"product_identifier\": \"1234-5678\",\n  \"variant_identifier\": \"1234-5678\",\n  \"original_sku\": \"888812345678\",\n  \"original_item_identifier\": \"1234\",\n  \"concept\": \"acme\"\n}\n```\n\n#### Instant Gift Card\nThis is an exchange of one or more items for a gift card. This will be represented in the `items` array by an object like the following:\n\n```json\n{\n  \"sku\": \"OPTOROGIFTCARD\",\n  \"quantity\": 1,\n  \"unit_price_amount_cents\": 800,\n  \"bonus_credit_amount_cents\": 200,\n  \"return_items\": [\n    {\n      \"title\": \"Pink Shirt\",\n      \"original_sku\": \"888812349672\",\n      \"original_item_identifier\": \"4567\",\n      \"quantity\": 1,\n      \"concept\": \"acme\"\n    }\n  ]\n}\n```\n\n`sku` will be the agreed upon value for an Instant Gift Card exchange and `return_items` will be the list of items being exchanged for the gift card.\n"
+  description: The **Exchange Orders** API is used to place an order in your e-commerce platform when the shopper has chosen to exchange for a replacement item or receive their refund via a gift card.
   version: 2.0.0
 tags:
 - name: Exchange Orders
@@ -43,6 +43,33 @@ paths:
       - Exchange Orders
 components:
   schemas:
+    customer:
+      required:
+      - identifier
+      - email
+      description: Customer who placed order.
+      type: object
+      properties:
+        identifier:
+          description: Reference to customer record in your OMS
+          type: string
+          example: '123'
+        first_name:
+          description: Customer first name
+          type: string
+          example: Carmine
+        last_name:
+          description: Customer last name
+          type: string
+          example: Customer
+        email:
+          description: Customer contact email
+          type: string
+          example: customer@example.com
+        phone:
+          description: Customer phone
+          type: string
+          example: 202-555-1212
     exchange_order_address:
       required:
       - name
@@ -85,63 +112,6 @@ components:
           description: Phone number.
           type: string
           example: 202-555-1212
-    customer:
-      required:
-      - identifier
-      - email
-      description: Customer who placed order.
-      type: object
-      properties:
-        identifier:
-          description: Reference to customer record in your OMS
-          type: string
-          example: '123'
-        first_name:
-          description: Customer first name
-          type: string
-          example: Carmine
-        last_name:
-          description: Customer last name
-          type: string
-          example: Customer
-        email:
-          description: Customer contact email
-          type: string
-          example: customer@example.com
-        phone:
-          description: Customer phone
-          type: string
-          example: 202-555-1212
-    exchange_order_response:
-      required:
-      - order_identifier
-      - total_amount_cents
-      - product_amount_cents
-      - tax_amount_cents
-      type: object
-      properties:
-        order_identifier:
-          description: Identifier of created order, should be the same order id given to shoppers
-          type: string
-          example: OR124567
-        total_amount_cents:
-          description: Total amount of order in cents, including any gift card bonus credit (if applicable)
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        product_amount_cents:
-          description: Product amount of order in cents, before discounts, taxes or shipping costs
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        tax_amount_cents:
-          description: Tax amount of order in cents
-          type: integer
-          format: int
-          minimum: 0
-          example: 110
     exchange_order_item:
       required:
       - sku
@@ -215,33 +185,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/exchange_order_return_item'
-    exchange_order_return_item:
-      required:
-      - original_sku
-      - original_item_identifier
-      - quantity
-      type: object
-      properties:
-        title:
-          description: Title of product
-          type: string
-          example: Pink Shirt
-        original_sku:
-          description: SKU of the item from original order that is being exchanged.
-          type: string
-          example: '888812345678'
-        original_item_identifier:
-          description: Order line item identifier of the item from original order that is being exchanged.
-          type: string
-          example: '1234'
-        quantity:
-          description: The number of units within the order for each SKU (or UPC). Must be less than or equal to 1000.
-          type: integer
-          example: 2
-        concept:
-          description: The concept brand that this item belongs to.
-          type: string
-          example: acme
     exchange_order:
       required:
       - currency
@@ -324,3 +267,60 @@ components:
               type: string
               description: Optoro generated number for order payment
               example: 8ef05fb8-283e-4edd-a3d7-47f9fe520cfe
+    exchange_order_return_item:
+      required:
+      - original_sku
+      - original_item_identifier
+      - quantity
+      type: object
+      properties:
+        title:
+          description: Title of product
+          type: string
+          example: Pink Shirt
+        original_sku:
+          description: SKU of the item from original order that is being exchanged.
+          type: string
+          example: '888812345678'
+        original_item_identifier:
+          description: Order line item identifier of the item from original order that is being exchanged.
+          type: string
+          example: '1234'
+        quantity:
+          description: The number of units within the order for each SKU (or UPC). Must be less than or equal to 1000.
+          type: integer
+          example: 2
+        concept:
+          description: The concept brand that this item belongs to.
+          type: string
+          example: acme
+    exchange_order_response:
+      required:
+      - order_identifier
+      - total_amount_cents
+      - product_amount_cents
+      - tax_amount_cents
+      type: object
+      properties:
+        order_identifier:
+          description: Identifier of created order, should be the same order id given to shoppers
+          type: string
+          example: OR124567
+        total_amount_cents:
+          description: Total amount of order in cents, including any gift card bonus credit (if applicable)
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        product_amount_cents:
+          description: Product amount of order in cents, before discounts, taxes or shipping costs
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        tax_amount_cents:
+          description: Tax amount of order in cents
+          type: integer
+          format: int
+          minimum: 0
+          example: 110
