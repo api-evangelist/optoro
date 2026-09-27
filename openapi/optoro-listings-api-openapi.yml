@@ -259,7 +259,56 @@ paths:
         5XX:
           $ref: '#/components/responses/InternalServerError'
 components:
+  responses:
+    NotFound:
+      description: Not Found
+    Unauthorized:
+      description: Not Authorized
+    BadRequest:
+      description: Bad Request
+    InternalServerError:
+      description: Internal Server Error
   schemas:
+    listing:
+      type: object
+      description: Listing attributes
+      properties:
+        identifier:
+          type: string
+          description: SKU or the lot name (i.e. CSAA12345) associated with the listing, used to link the order item to a listing. This is what the client will send back to us in the order item object to denote what needs to be shipped.
+          example: S11727
+        condition:
+          type: string
+          description: Condition code.
+          enum:
+          - N
+          - A
+          - B
+          - R
+        channel:
+          type: string
+          description: Inventory channel name
+          example: rts_drop_ship
+        quantity:
+          type: integer
+          description: Quantity of units or lots available. This will always be 1 for lots
+          example: 1
+        lot:
+          $ref: '#/components/schemas/lot'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+      additionalProperties: false
+      required:
+      - identifier
+      - quantity
+      - condition
+      - channel
     manifest_item:
       type: object
       description: Manifest item attributes
@@ -330,46 +379,6 @@ components:
       - item_title
       - upc
       - sku
-    listing:
-      type: object
-      description: Listing attributes
-      properties:
-        identifier:
-          type: string
-          description: SKU or the lot name (i.e. CSAA12345) associated with the listing, used to link the order item to a listing. This is what the client will send back to us in the order item object to denote what needs to be shipped.
-          example: S11727
-        condition:
-          type: string
-          description: Condition code.
-          enum:
-          - N
-          - A
-          - B
-          - R
-        channel:
-          type: string
-          description: Inventory channel name
-          example: rts_drop_ship
-        quantity:
-          type: integer
-          description: Quantity of units or lots available. This will always be 1 for lots
-          example: 1
-        lot:
-          $ref: '#/components/schemas/lot'
-        created_at:
-          type: string
-          format: date-time
-          description: Creation timestamp iso8601 UTC
-        updated_at:
-          type: string
-          format: date-time
-          description: Timestamp of most recent update iso8601 UTC
-      additionalProperties: false
-      required:
-      - identifier
-      - quantity
-      - condition
-      - channel
     lot:
       type: object
       description: Lot information from the lot object
@@ -425,15 +434,6 @@ components:
       schema:
         type: string
         example: '6'
-  responses:
-    BadRequest:
-      description: Bad Request
-    InternalServerError:
-      description: Internal Server Error
-    NotFound:
-      description: Not Found
-    Unauthorized:
-      description: Not Authorized
   securitySchemes:
     oAuth2:
       type: oauth2

@@ -54,6 +54,15 @@ paths:
       tags:
       - Dispositions
 components:
+  responses:
+    Unauthorized:
+      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
+    BadRequest:
+      description: Bad Request
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable
   schemas:
     DispositionPayload:
       type: object
@@ -180,12 +189,3 @@ components:
                 - missing_field
                 - invalid_type
                 - invalid
-  responses:
-    InternalServerError:
-      description: Internal Server Error
-    BadRequest:
-      description: Bad Request
-    ServerUnavailable:
-      description: Client Server Unavailable
-    Unauthorized:
-      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.

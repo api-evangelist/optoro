@@ -54,14 +54,14 @@ paths:
       - Final Dispositions
 components:
   responses:
-    BadRequest:
-      description: Bad Request
-    ServerUnavailable:
-      description: Client Server Unavailable
-    InternalServerError:
-      description: Internal Server Error
     Unauthorized:
       description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
+    BadRequest:
+      description: Bad Request
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable
   schemas:
     ValidationFailure:
       type: object

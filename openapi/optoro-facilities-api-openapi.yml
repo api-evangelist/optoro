@@ -168,14 +168,14 @@ components:
         type: string
         example: '2024-08-08'
   responses:
-    BadRequest:
-      description: Malformed request. Check structure of JSON payload.
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
     Unauthorized:
       description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
 
         '
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
   schemas:
     ValidationFailure:
       type: object

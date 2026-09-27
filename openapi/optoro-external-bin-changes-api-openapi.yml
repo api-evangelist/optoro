@@ -204,10 +204,19 @@ paths:
       - External Bin Changes
 components:
   responses:
-    GatewayTimeout:
-      description: Service is over capacity. Please try again later.
-    InternalServerError:
-      description: An internal error occured. Please contact Optoro for further guidance.
+    ServiceUnavailable:
+      description: Service is unavailable and/or over capacity. Please try again later.
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token
+
+        from the auth service.
+
+        '
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Not Authorized
     BadRequest:
       description: The server cannot process the request due to a client error. Check the message and detail fields for further information.
       headers:
@@ -231,19 +240,10 @@ components:
             locationNotMovable:
               value:
                 error: Location 'CONVEYOR' cannot be moved.
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token
-
-        from the auth service.
-
-        '
-      content:
-        application/json:
-          schema:
-            type: string
-            example: Not Authorized
-    ServiceUnavailable:
-      description: Service is unavailable and/or over capacity. Please try again later.
+    InternalServerError:
+      description: An internal error occured. Please contact Optoro for further guidance.
+    GatewayTimeout:
+      description: Service is over capacity. Please try again later.
   schemas:
     UnitBinChange:
       type: object
@@ -267,6 +267,23 @@ components:
           type: string
           description: Name of a location
           example: CA-TN-0001
+    Location:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - location
+          example: location
+        id:
+          type: string
+          description: Name of the location
+          example: TOC-TN-0001
+        items:
+          type: array
+          description: Items contained in this location
+          items:
+            $ref: '#/components/schemas/Unit'
     Unit:
       type: object
       properties:
@@ -306,30 +323,6 @@ components:
               type: string
               description: Designated directed sorting slot for the unit
               example: RTS-SORT-SL1
-    Location:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - location
-          example: location
-        id:
-          type: string
-          description: Name of the location
-          example: TOC-TN-0001
-        items:
-          type: array
-          description: Items contained in this location
-          items:
-            $ref: '#/components/schemas/Unit'
-  headers:
-    Optiturn-External-Bin-Changes-Version:
-      description: Version of the External Bin Changes API
-      schema:
-        type: string
-        enum:
-        - '2023-05-01'
   parameters:
     OptiturnExternalBinChangesVersion:
       name: Optiturn-External-Bin-Changes-Version
@@ -340,6 +333,13 @@ components:
         enum:
         - '2023-05-01'
       required: true
+  headers:
+    Optiturn-External-Bin-Changes-Version:
+      description: Version of the External Bin Changes API
+      schema:
+        type: string
+        enum:
+        - '2023-05-01'
   securitySchemes:
     optoro_auth:
       type: http

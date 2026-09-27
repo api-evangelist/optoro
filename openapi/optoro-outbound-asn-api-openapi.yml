@@ -174,6 +174,25 @@ paths:
       - Outbound Asn
 components:
   schemas:
+    reference:
+      type: object
+      description: Reference to a Stock Transfer Order, Return Authorization, RMA, Forward Order or Returns Portal Order which can be used to reconcile against. See below for fields.
+      required:
+      - type
+      - identifier
+      properties:
+        type:
+          type: string
+          description: 'Reference type, allowed values are: StockTransferOrder, RA, RMA, ForwardOrder or ReturnsPortalOrder.'
+          example: RA
+        identifier:
+          type: string
+          description: 'Reference identifier - for example: the RMA number or RA Number associated with this shipment. This is a pass through from the inbound ASN.'
+          example: '573001000000'
+        alternate_identifier:
+          type: string
+          description: Secondary reference identifier.
+          example: '742769019332'
     address:
       type: object
       description: The address this shipment is going to. See below for fields.
@@ -212,25 +231,6 @@ components:
           type: string
           description: The zip code for this address.
           example: '43125'
-    reference:
-      type: object
-      description: Reference to a Stock Transfer Order, Return Authorization, RMA, Forward Order or Returns Portal Order which can be used to reconcile against. See below for fields.
-      required:
-      - type
-      - identifier
-      properties:
-        type:
-          type: string
-          description: 'Reference type, allowed values are: StockTransferOrder, RA, RMA, ForwardOrder or ReturnsPortalOrder.'
-          example: RA
-        identifier:
-          type: string
-          description: 'Reference identifier - for example: the RMA number or RA Number associated with this shipment. This is a pass through from the inbound ASN.'
-          example: '573001000000'
-        alternate_identifier:
-          type: string
-          description: Secondary reference identifier.
-          example: '742769019332'
     details:
       type: array
       description: The sku or unit lines expected in this carton. See below for details fields.

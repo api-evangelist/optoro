@@ -42,9 +42,7 @@
     "optoro-vendor-updates-api-openapi.yml",
     "optoro-sku-api-openapi.yml"
   ],
-  "archived": [
-    "deleted 2 superseded output(s) from the previous generation"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
@@ -105,8 +103,7 @@
     "optoro-variants-openapi-original.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "optoro-variants-openapi-original.yml: tagged paths GET /sku/{parent_sku}/variants -> Sku",
     "optoro-variants-openapi-original.yml: declared missing tag: Sku",
-    "superseded outputs removed: optoro-as-ns-api-openapi.yml, optoro-o-auth-api-openapi.yml",
-    "apis.yml register: written (+2 apis, 21 total)"
+    "apis.yml register: already-registered"
   ],
   "skipped": [
     "_original/optoro-variants-openapi.yml: archived document superseded by a larger archived document",
@@ -126,7 +123,7 @@
     "_original/optoro-catalogs-openapi.yml: archived document superseded by a larger archived document",
     "_original/optoro-auth-openapi.yml: archived document superseded by a larger archived document",
     "_original/optoro-asn-openapi.yml: archived document superseded by a larger archived document",
-    "optoro-as-ns-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "optoro-asns-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-catalog-entry-updates-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-dispositions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-drop-shipment-cancellation-api-openapi.yml: previously refined output, superseded by openapi/_original/",
@@ -139,7 +136,7 @@
     "optoro-forward-orders-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-inventory-receipt-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-listings-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "optoro-o-auth-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "optoro-oauth-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-orders-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-outbound-asn-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "optoro-returns-portal-orders-api-openapi.yml: previously refined output, superseded by openapi/_original/",

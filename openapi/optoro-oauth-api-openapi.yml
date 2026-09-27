@@ -1,6 +1,6 @@
 openapi: 3.2.0
 info:
-  title: OAUTH API
+  title: OAuth API
   version: 1.0.0
   description: The Auth API provides access to other Optoro APIs using the OAuth 2.0 client credentials flow. Optoro's Client Success team will provide the credentials used when requesting an access token. The access token returned from the oauth/tokens endpoint will be used in subsequent requests to Optoro APIs.
 servers:
@@ -102,9 +102,9 @@ components:
   responses:
     NotFound:
       description: The requested resource could not be found.
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
     UnprocessableEntity:
       description: The request could not not be processed. Ensure parameter values are valid.
     BadRequest:
       description: Malformed request. Check structure of JSON payload.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.

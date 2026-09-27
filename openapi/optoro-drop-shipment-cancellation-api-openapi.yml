@@ -54,45 +54,7 @@ paths:
       tags:
       - Drop Shipment Cancellation
 components:
-  responses:
-    BadRequest:
-      description: Bad Request
-    ServerUnavailable:
-      description: Client Server Unavailable
-    InternalServerError:
-      description: Internal Server Error
-    Unauthorized:
-      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
   schemas:
-    ValidationFailure:
-      type: object
-      required:
-      - message
-      - errors
-      properties:
-        message:
-          type: string
-          description: Summary of the error(s).
-        errors:
-          type: array
-          description: Contains one or more error objects.
-          items:
-            type: object
-            required:
-            - field
-            - code
-            description: Describes a single validation failure.
-            properties:
-              field:
-                type: string
-                description: JSON path of the field that failed validation.
-              code:
-                type: string
-                description: Categorization of validation failure. Defaults to 'invalid'.
-                enum:
-                - missing_field
-                - invalid_type
-                - invalid
     DropShipmentCancellation:
       type: object
       description: Drop Shipment Cancellation Data
@@ -357,3 +319,41 @@ components:
           - shipping_cost_cents
           - shipping_tax_cents
           - order_items
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                - missing_field
+                - invalid_type
+                - invalid
+  responses:
+    Unauthorized:
+      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
+    BadRequest:
+      description: Bad Request
+    InternalServerError:
+      description: Internal Server Error
+    ServerUnavailable:
+      description: Client Server Unavailable

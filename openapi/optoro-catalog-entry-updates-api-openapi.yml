@@ -657,15 +657,6 @@ paths:
       tags:
       - Catalog Entry Updates
 components:
-  responses:
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
-    BadRequest:
-      description: Malformed request. Check structure of JSON payload.
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
-
-        '
   parameters:
     versionHeader:
       name: Optiturn-Catalogs-Version
@@ -676,10 +667,16 @@ components:
       required: true
       schema:
         type: string
+  responses:
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+
+        '
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
   schemas:
-    sku:
-      type: string
-      minLength: 1
     ValidationFailure:
       type: object
       required:
@@ -713,6 +710,9 @@ components:
               message:
                 type: string
                 description: Human-readable description of the validation failure.
+    sku:
+      type: string
+      minLength: 1
   securitySchemes:
     oAuth2:
       type: oauth2

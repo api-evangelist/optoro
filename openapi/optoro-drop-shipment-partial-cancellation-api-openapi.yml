@@ -55,14 +55,14 @@ paths:
       - Drop Shipment Partial Cancellation
 components:
   responses:
+    Unauthorized:
+      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
     BadRequest:
       description: Bad Request
     ServerUnavailable:
       description: Client Server Unavailable
     InternalServerError:
       description: Internal Server Error
-    Unauthorized:
-      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
   schemas:
     ValidationFailure:
       type: object

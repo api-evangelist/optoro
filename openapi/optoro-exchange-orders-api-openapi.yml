@@ -185,6 +185,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/exchange_order_return_item'
+    exchange_order_response:
+      required:
+      - order_identifier
+      - total_amount_cents
+      - product_amount_cents
+      - tax_amount_cents
+      type: object
+      properties:
+        order_identifier:
+          description: Identifier of created order, should be the same order id given to shoppers
+          type: string
+          example: OR124567
+        total_amount_cents:
+          description: Total amount of order in cents, including any gift card bonus credit (if applicable)
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        product_amount_cents:
+          description: Product amount of order in cents, before discounts, taxes or shipping costs
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        tax_amount_cents:
+          description: Tax amount of order in cents
+          type: integer
+          format: int
+          minimum: 0
+          example: 110
     exchange_order:
       required:
       - currency
@@ -294,33 +324,3 @@ components:
           description: The concept brand that this item belongs to.
           type: string
           example: acme
-    exchange_order_response:
-      required:
-      - order_identifier
-      - total_amount_cents
-      - product_amount_cents
-      - tax_amount_cents
-      type: object
-      properties:
-        order_identifier:
-          description: Identifier of created order, should be the same order id given to shoppers
-          type: string
-          example: OR124567
-        total_amount_cents:
-          description: Total amount of order in cents, including any gift card bonus credit (if applicable)
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        product_amount_cents:
-          description: Product amount of order in cents, before discounts, taxes or shipping costs
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        tax_amount_cents:
-          description: Tax amount of order in cents
-          type: integer
-          format: int
-          minimum: 0
-          example: 110
