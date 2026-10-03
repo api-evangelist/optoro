@@ -564,19 +564,85 @@ paths:
                     example: Order cancellation failed. Please try again
 components:
   responses:
-    NotFound:
-      description: Not Found
+    LargeRequest:
+      description: Request too large
+    InternalServerError:
+      description: Internal Server Error
     UnprocessableEntity:
       description: Unprocessable Entity
+    NotFound:
+      description: Not Found
     Unauthorized:
       description: Not Authorized
     BadRequest:
       description: Bad Request
-    InternalServerError:
-      description: Internal Server Error
-    LargeRequest:
-      description: Request too large
+  parameters:
+    api-version:
+      name: api-version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '6'
   schemas:
+    shipping_address:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          example: 1
+        name:
+          type: string
+          description: Name for the address.
+          example: James Carter
+        company:
+          type: string
+          description: Company name for the address.
+          example: Carter Industries
+        telephone_number:
+          type: string
+          description: Telephone number linked to the address.
+          example: (206) 555-1208
+        street:
+          type: string
+          description: Street line 1 of the address.
+          example: 121 Vine Street
+        street2:
+          type: string
+          description: Street line 2 of the address.
+          example: Suite 1200
+        city:
+          type: string
+          description: City of the address.
+          example: Seattle
+        state:
+          type: string
+          description: State of the address.
+          example: WA
+        zip_code:
+          type: string
+          description: Zip code of the address.
+          example: '98121'
+        country:
+          type: string
+          description: Country of the address.
+          example: US
+        loading_dock:
+          type: boolean
+          description: Flag to determine whether fork lift is required to deliver package.
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp iso8601 UTC
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of most recent update iso8601 UTC
+      additionalProperties: false
     order:
       type: object
       description: Order attributes
@@ -694,128 +760,53 @@ components:
       - billing_address
       - shipping_address
       - order_items
-    order_item:
-      type: object
-      description: Order Item attributes
-      properties:
-        id:
-          type: integer
-          description: An object's database primary key. Do not rely on this value!
-          example: 1
-        client_identifier:
-          type: string
-          description: The order item identifier for the order item, typically coming from the customer's ecommerce platform or OMS
-          example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
-        sku:
-          type: string
-          description: Item SKU or listing identifier. This will always be listing.identifier
-          example: PTBQ121308
-        brand:
-          type: string
-          description: The brand name of the order item
-          example: test_brand
-        condition:
-          type: string
-          description: The condition code for the order item
-          example: N
-        quantity:
-          type: integer
-          description: The quantity of the order item
-          example: 1
-        price_cents:
-          type: integer
-          description: The price in cents for the total quantity of the order item
-          example: 10000
-        tax_cents:
-          type: integer
-          description: The tax in cents for the total quantity of the order item
-          example: 1000
-        shipping_cost_cents:
-          type: integer
-          description: The shipping cost paid in cents for the order item
-          example: 500
-        shipping_tax_cents:
-          type: integer
-          description: The shipping tax paid in cents for the order item
-          example: 0
-        status:
-          type: string
-          description: Status of the order item
-          enum:
-          - created
-          - accepted
-          - rejected
-          - cancelled
-          - pending
-          - partially_shipped
-          - shipped
-        comments:
-          type: string
-          description: Comments associated with the order item
-        created_at:
-          type: string
-          format: date-time
-          description: Date created in ISO 8601 format in UTC
-        updated_at:
-          type: string
-          format: date-time
-          description: Date last updated in ISO 8601 format in UTC
-      additionalProperties: false
-    shipping_address:
+    billing_address-2:
       type: object
       properties:
-        id:
-          type: integer
-          description: An object's database primary key. Do not rely on this value!
-          example: 1
         name:
           type: string
           description: Name for the address.
-          example: James Carter
+          example: Lacy Macejkovic
         company:
           type: string
           description: Company name for the address.
-          example: Carter Industries
+          example: Bayer-Abernathy
         telephone_number:
           type: string
           description: Telephone number linked to the address.
-          example: (206) 555-1208
+          example: 252-948-6723 12345
         street:
           type: string
           description: Street line 1 of the address.
-          example: 121 Vine Street
+          example: 315 5th Ave
         street2:
           type: string
           description: Street line 2 of the address.
-          example: Suite 1200
+          example: Suite 2112
         city:
           type: string
           description: City of the address.
-          example: Seattle
+          example: New York
         state:
           type: string
           description: State of the address.
-          example: WA
+          example: NY
         zip_code:
           type: string
           description: Zip code of the address.
-          example: '98121'
+          example: '10016'
         country:
           type: string
           description: Country of the address.
           example: US
-        loading_dock:
-          type: boolean
-          description: Flag to determine whether fork lift is required to deliver package.
-        created_at:
-          type: string
-          format: date-time
-          description: Creation timestamp iso8601 UTC
-        updated_at:
-          type: string
-          format: date-time
-          description: Timestamp of most recent update iso8601 UTC
       additionalProperties: false
+      required:
+      - name
+      - telephone_number
+      - street
+      - city
+      - state
+      - zip_code
     shipping_address-2:
       type: object
       properties:
@@ -1058,64 +1049,73 @@ components:
           description: Comments associated with the order item
           example: ''
       additionalProperties: false
-    billing_address-2:
+    order_item:
       type: object
+      description: Order Item attributes
       properties:
-        name:
+        id:
+          type: integer
+          description: An object's database primary key. Do not rely on this value!
+          example: 1
+        client_identifier:
           type: string
-          description: Name for the address.
-          example: Lacy Macejkovic
-        company:
+          description: The order item identifier for the order item, typically coming from the customer's ecommerce platform or OMS
+          example: 296f0b98-7bc5-4750-8cb9-2e36db1ff766
+        sku:
           type: string
-          description: Company name for the address.
-          example: Bayer-Abernathy
-        telephone_number:
+          description: Item SKU or listing identifier. This will always be listing.identifier
+          example: PTBQ121308
+        brand:
           type: string
-          description: Telephone number linked to the address.
-          example: 252-948-6723 12345
-        street:
+          description: The brand name of the order item
+          example: test_brand
+        condition:
           type: string
-          description: Street line 1 of the address.
-          example: 315 5th Ave
-        street2:
+          description: The condition code for the order item
+          example: N
+        quantity:
+          type: integer
+          description: The quantity of the order item
+          example: 1
+        price_cents:
+          type: integer
+          description: The price in cents for the total quantity of the order item
+          example: 10000
+        tax_cents:
+          type: integer
+          description: The tax in cents for the total quantity of the order item
+          example: 1000
+        shipping_cost_cents:
+          type: integer
+          description: The shipping cost paid in cents for the order item
+          example: 500
+        shipping_tax_cents:
+          type: integer
+          description: The shipping tax paid in cents for the order item
+          example: 0
+        status:
           type: string
-          description: Street line 2 of the address.
-          example: Suite 2112
-        city:
+          description: Status of the order item
+          enum:
+          - created
+          - accepted
+          - rejected
+          - cancelled
+          - pending
+          - partially_shipped
+          - shipped
+        comments:
           type: string
-          description: City of the address.
-          example: New York
-        state:
+          description: Comments associated with the order item
+        created_at:
           type: string
-          description: State of the address.
-          example: NY
-        zip_code:
+          format: date-time
+          description: Date created in ISO 8601 format in UTC
+        updated_at:
           type: string
-          description: Zip code of the address.
-          example: '10016'
-        country:
-          type: string
-          description: Country of the address.
-          example: US
+          format: date-time
+          description: Date last updated in ISO 8601 format in UTC
       additionalProperties: false
-      required:
-      - name
-      - telephone_number
-      - street
-      - city
-      - state
-      - zip_code
-  parameters:
-    api-version:
-      name: api-version
-      in: header
-      description: 'The version of the API to use.
-
-        '
-      required: true
-      schema:
-        type: string
-        example: '6'
   securitySchemes:
     oAuth2:
       type: oauth2

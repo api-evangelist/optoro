@@ -54,44 +54,15 @@ paths:
       - Final Dispositions
 components:
   responses:
-    Unauthorized:
-      description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
-    BadRequest:
-      description: Bad Request
     InternalServerError:
       description: Internal Server Error
     ServerUnavailable:
       description: Client Server Unavailable
+    Unauthorized:
+      description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
+    BadRequest:
+      description: Bad Request
   schemas:
-    ValidationFailure:
-      type: object
-      required:
-      - message
-      - errors
-      properties:
-        message:
-          type: string
-          description: Summary of the error(s).
-        errors:
-          type: array
-          description: Containes one or more error objects.
-          items:
-            type: object
-            required:
-            - field
-            - code
-            description: Describes a single validation failure.
-            properties:
-              field:
-                type: string
-                description: JSON path of the field that failed validation.
-              code:
-                type: string
-                description: Categorization of validation failure. Defaults to 'invalid'.
-                enum:
-                - missing_field
-                - invalid_type
-                - invalid
     FinalDispositionPayload:
       type: object
       description: Final Disposition Data
@@ -165,3 +136,32 @@ components:
       - optiturn_lp
       - program_identifier
       - condition
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Containes one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                - missing_field
+                - invalid_type
+                - invalid

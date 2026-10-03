@@ -156,6 +156,15 @@ paths:
       tags:
       - Facilities
 components:
+  responses:
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+
+        '
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
   parameters:
     api-version:
       name: Optiturn-Facilities-Version
@@ -167,48 +176,7 @@ components:
       schema:
         type: string
         example: '2024-08-08'
-  responses:
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
-
-        '
-    BadRequest:
-      description: Malformed request. Check structure of JSON payload.
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
   schemas:
-    ValidationFailure:
-      type: object
-      required:
-      - message
-      - errors
-      properties:
-        message:
-          type: string
-          description: Summary of the error(s).
-        errors:
-          type: array
-          description: Contains one or more error objects.
-          items:
-            type: object
-            required:
-            - field
-            - code
-            - message
-            description: Describes a single validation failure.
-            properties:
-              field:
-                type: string
-                description: JSON path of the field that failed validation.
-              code:
-                type: string
-                description: Categorization of validation failure. Defaults to 'invalid_data'.
-                enum:
-                - invalid_data
-                - not_found
-              message:
-                type: string
-                description: Human-readable description of the validation failure.
     facility:
       type: object
       description: Facility attributes
@@ -282,6 +250,38 @@ components:
       additionalProperties: false
       required:
       - identifier
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            - message
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid_data'.
+                enum:
+                - invalid_data
+                - not_found
+              message:
+                type: string
+                description: Human-readable description of the validation failure.
   securitySchemes:
     oAuth2:
       type: oauth2

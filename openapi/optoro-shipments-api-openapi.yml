@@ -189,6 +189,13 @@ paths:
         5XX:
           $ref: '#/components/responses/InternalServerError'
 components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Not Authorized
+    BadRequest:
+      description: Bad Request
   schemas:
     shipment:
       type: object
@@ -279,13 +286,6 @@ components:
       schema:
         type: string
         example: '6'
-  responses:
-    Unauthorized:
-      description: Not Authorized
-    BadRequest:
-      description: Bad Request
-    InternalServerError:
-      description: Internal Server Error
   securitySchemes:
     oAuth2:
       type: oauth2

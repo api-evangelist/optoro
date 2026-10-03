@@ -55,15 +55,44 @@ paths:
       - Dispositions
 components:
   responses:
-    Unauthorized:
-      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
-    BadRequest:
-      description: Bad Request
     InternalServerError:
       description: Internal Server Error
     ServerUnavailable:
       description: Client Server Unavailable
+    Unauthorized:
+      description: Not Authorized. A new authentication token will be requested from the client's services and the request will be retried.
+    BadRequest:
+      description: Bad Request
   schemas:
+    ValidationFailure:
+      type: object
+      required:
+      - message
+      - errors
+      properties:
+        message:
+          type: string
+          description: Summary of the error(s).
+        errors:
+          type: array
+          description: Contains one or more error objects.
+          items:
+            type: object
+            required:
+            - field
+            - code
+            description: Describes a single validation failure.
+            properties:
+              field:
+                type: string
+                description: JSON path of the field that failed validation.
+              code:
+                type: string
+                description: Categorization of validation failure. Defaults to 'invalid'.
+                enum:
+                - missing_field
+                - invalid_type
+                - invalid
     DispositionPayload:
       type: object
       description: Disposition Update Data
@@ -160,32 +189,3 @@ components:
       - upc
       - from_condition
       - to_condition
-    ValidationFailure:
-      type: object
-      required:
-      - message
-      - errors
-      properties:
-        message:
-          type: string
-          description: Summary of the error(s).
-        errors:
-          type: array
-          description: Contains one or more error objects.
-          items:
-            type: object
-            required:
-            - field
-            - code
-            description: Describes a single validation failure.
-            properties:
-              field:
-                type: string
-                description: JSON path of the field that failed validation.
-              code:
-                type: string
-                description: Categorization of validation failure. Defaults to 'invalid'.
-                enum:
-                - missing_field
-                - invalid_type
-                - invalid

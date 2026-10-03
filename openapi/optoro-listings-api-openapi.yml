@@ -260,55 +260,59 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 components:
   responses:
+    InternalServerError:
+      description: Internal Server Error
     NotFound:
       description: Not Found
     Unauthorized:
       description: Not Authorized
     BadRequest:
       description: Bad Request
-    InternalServerError:
-      description: Internal Server Error
   schemas:
-    listing:
+    lot:
       type: object
-      description: Listing attributes
+      description: Lot information from the lot object
       properties:
-        identifier:
+        warehouse_name:
           type: string
-          description: SKU or the lot name (i.e. CSAA12345) associated with the listing, used to link the order item to a listing. This is what the client will send back to us in the order item object to denote what needs to be shipped.
-          example: S11727
-        condition:
+          description: Warehouse name where the pallet is shipping from
+          example: Warehouse A
+        template_name:
           type: string
-          description: Condition code.
-          enum:
-          - N
-          - A
-          - B
-          - R
-        channel:
-          type: string
-          description: Inventory channel name
-          example: rts_drop_ship
-        quantity:
-          type: integer
-          description: Quantity of units or lots available. This will always be 1 for lots
-          example: 1
-        lot:
-          $ref: '#/components/schemas/lot'
+          description: Name of the sorting template in directed sort
+          example: template
+        photo_urls:
+          type: array
+          items:
+            type: string
+          description: Photo URLs for the lot
+          example:
+          - test_image.com
+          - example_image.com
+        weight:
+          type: number
+          description: Weight of the lot in pounds
+          example: 1.5
+        manifest_items:
+          type: array
+          description: Items in the manifest
+          items:
+            $ref: '#/components/schemas/manifest_item'
         created_at:
           type: string
           format: date-time
-          description: Creation timestamp iso8601 UTC
+          description: Date created in ISO 8601 format in UTC
         updated_at:
           type: string
           format: date-time
-          description: Timestamp of most recent update iso8601 UTC
+          description: Date last updated in ISO 8601 format in UTC
       additionalProperties: false
       required:
-      - identifier
-      - quantity
-      - condition
-      - channel
+      - template_name
+      - weight
+      - manifest_items
+      - created_at
+      - updated_at
     manifest_item:
       type: object
       description: Manifest item attributes
@@ -379,50 +383,46 @@ components:
       - item_title
       - upc
       - sku
-    lot:
+    listing:
       type: object
-      description: Lot information from the lot object
+      description: Listing attributes
       properties:
-        warehouse_name:
+        identifier:
           type: string
-          description: Warehouse name where the pallet is shipping from
-          example: Warehouse A
-        template_name:
+          description: SKU or the lot name (i.e. CSAA12345) associated with the listing, used to link the order item to a listing. This is what the client will send back to us in the order item object to denote what needs to be shipped.
+          example: S11727
+        condition:
           type: string
-          description: Name of the sorting template in directed sort
-          example: template
-        photo_urls:
-          type: array
-          items:
-            type: string
-          description: Photo URLs for the lot
-          example:
-          - test_image.com
-          - example_image.com
-        weight:
-          type: number
-          description: Weight of the lot in pounds
-          example: 1.5
-        manifest_items:
-          type: array
-          description: Items in the manifest
-          items:
-            $ref: '#/components/schemas/manifest_item'
+          description: Condition code.
+          enum:
+          - N
+          - A
+          - B
+          - R
+        channel:
+          type: string
+          description: Inventory channel name
+          example: rts_drop_ship
+        quantity:
+          type: integer
+          description: Quantity of units or lots available. This will always be 1 for lots
+          example: 1
+        lot:
+          $ref: '#/components/schemas/lot'
         created_at:
           type: string
           format: date-time
-          description: Date created in ISO 8601 format in UTC
+          description: Creation timestamp iso8601 UTC
         updated_at:
           type: string
           format: date-time
-          description: Date last updated in ISO 8601 format in UTC
+          description: Timestamp of most recent update iso8601 UTC
       additionalProperties: false
       required:
-      - template_name
-      - weight
-      - manifest_items
-      - created_at
-      - updated_at
+      - identifier
+      - quantity
+      - condition
+      - channel
   parameters:
     api-version:
       name: api-version

@@ -646,6 +646,97 @@ paths:
       - Rmas
 components:
   schemas:
+    rma:
+      type: object
+      required:
+      - rma_identifier
+      - created_at
+      - items
+      - status
+      - return_shipping_cost_cents
+      - bonus_credit_amount_cents
+      - return_method
+      - gift_refund_only
+      properties:
+        rma_identifier:
+          description: Identifier of the RMA.
+          type: string
+          example: RMA123
+        status:
+          description: The status of the RMA.
+          type: string
+          enum:
+          - PENDING_EXCHANGE
+          - CREATED
+          - REFUNDED
+          - PARTIAL_REFUND
+          - CANCELED
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        updated_at:
+          description: Last updated date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        items:
+          description: List of items that are being returned in the RMA.
+          type: array
+          items:
+            $ref: '#/components/schemas/rma_item'
+        return_method:
+          description: Return method used to return the RMA.
+          type: string
+          enum:
+          - mail-back
+          - express-returns
+          - customer-keep
+          - home-pickup
+          example: mail-back
+        return_shipping_cost_cents:
+          description: The return shipping cost.
+          type: integer
+          example: 100
+        bonus_credit_amount_cents:
+          description: The bonus credit granted to the shopper.
+          type: integer
+          example: 500
+        gift_refund_only:
+          description: If true, only issue a gift card and do not refund original purchase payment.
+          type: boolean
+          example: true
+        giftee_email:
+          description: Email to send gift card when gift_refund_only is true
+          type: string
+          example: giftee@example.com
+        warehouse_id:
+          description: Warehouse that return goods will be shipped to when using dynamic package routing
+          type: string
+          example: ''
+        receiving_complete:
+          description: This is for RM only.
+          type: boolean
+          example: false
+        concept:
+          description: RMA portal identifier
+          type: string
+          example: concept_!
+        vendor:
+          description: Vendor name from third party tag. Only present if any of the products of the corresponding order has this type of tag.
+          type: string
+          example: modrno
+        customer:
+          description: Customer details
+          type: object
+          properties:
+            tags:
+              description: List of customer tags from the order associated with this RMA.
+              type: array
+              items:
+                type: string
+              example:
+              - some-customer-tag
+              - SilverTier
     rma_item:
       required:
       - order_line_item_identifier
@@ -748,94 +839,3 @@ components:
           description: The condition of the item when it was received at the warehouse.
           type: string
           example: N
-    rma:
-      type: object
-      required:
-      - rma_identifier
-      - created_at
-      - items
-      - status
-      - return_shipping_cost_cents
-      - bonus_credit_amount_cents
-      - return_method
-      - gift_refund_only
-      properties:
-        rma_identifier:
-          description: Identifier of the RMA.
-          type: string
-          example: RMA123
-        status:
-          description: The status of the RMA.
-          type: string
-          enum:
-          - PENDING_EXCHANGE
-          - CREATED
-          - REFUNDED
-          - PARTIAL_REFUND
-          - CANCELED
-        created_at:
-          description: Creation date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        updated_at:
-          description: Last updated date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        items:
-          description: List of items that are being returned in the RMA.
-          type: array
-          items:
-            $ref: '#/components/schemas/rma_item'
-        return_method:
-          description: Return method used to return the RMA.
-          type: string
-          enum:
-          - mail-back
-          - express-returns
-          - customer-keep
-          - home-pickup
-          example: mail-back
-        return_shipping_cost_cents:
-          description: The return shipping cost.
-          type: integer
-          example: 100
-        bonus_credit_amount_cents:
-          description: The bonus credit granted to the shopper.
-          type: integer
-          example: 500
-        gift_refund_only:
-          description: If true, only issue a gift card and do not refund original purchase payment.
-          type: boolean
-          example: true
-        giftee_email:
-          description: Email to send gift card when gift_refund_only is true
-          type: string
-          example: giftee@example.com
-        warehouse_id:
-          description: Warehouse that return goods will be shipped to when using dynamic package routing
-          type: string
-          example: ''
-        receiving_complete:
-          description: This is for RM only.
-          type: boolean
-          example: false
-        concept:
-          description: RMA portal identifier
-          type: string
-          example: concept_!
-        vendor:
-          description: Vendor name from third party tag. Only present if any of the products of the corresponding order has this type of tag.
-          type: string
-          example: modrno
-        customer:
-          description: Customer details
-          type: object
-          properties:
-            tags:
-              description: List of customer tags from the order associated with this RMA.
-              type: array
-              items:
-                type: string
-              example:
-              - some-customer-tag
-              - SilverTier

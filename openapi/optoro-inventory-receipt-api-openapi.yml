@@ -153,6 +153,19 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    From:
+      required:
+      - identifier
+      - type
+      properties:
+        identifier:
+          type: string
+          example: 22
+          description: The from location for the ASN this receipt is being sent for.
+        type:
+          type: string
+          example: Warehouse
+          description: Type of the from location. Matches the Inbound ASN from.type.
     Reference:
       properties:
         type:
@@ -194,16 +207,3 @@ components:
           type: string
           example: 42
           description: Identifier for the original location. ie Numeric Warehouse ID, Store Number.
-    From:
-      required:
-      - identifier
-      - type
-      properties:
-        identifier:
-          type: string
-          example: 22
-          description: The from location for the ASN this receipt is being sent for.
-        type:
-          type: string
-          example: Warehouse
-          description: Type of the from location. Matches the Inbound ASN from.type.

@@ -35,33 +35,204 @@ paths:
       - Returns Portal Orders
 components:
   schemas:
-    customer:
+    transaction:
       required:
       - identifier
-      - email
-      description: Customer who placed order.
+      - parent_identifier
+      - amount_cents
+      - status
+      - type
+      - gateway
+      - is_online
+      - is_test
+      - created_at
+      - updated_at
+      - payment_details
       type: object
       properties:
         identifier:
-          description: Reference to customer record in your OMS
+          description: Unique identifier for a transaction.  These details are used to reconcile instant exchanges.
+          type: string
+          example: adf56c018de8438dbc7d86017cc10f1d
+        parent_identifier:
+          type: string
+          example: a0bf7bddb0928a7e69b51110c14831c0
+        amount_cents:
+          description: Raw amount of a particular transaction - all transactions amounts in a given order should sum to order amount.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        status:
+          description: Current status of the transaction. E.g. "PENDING" "SUCCESS" "FAILURE".
+          type: string
+          example: PENDING
+        type:
+          description: Type refers to credit/debit from merchants point of view. E.g. "AUTHORIZATION" "CAPTURE" "SALE" "REFUND" "VOID".
+          type: string
+          example: CAPTURE
+        gateway:
+          description: Name of the payment gateway.
+          type: string
+          example: QuikPay
+        is_online:
+          description: Denotes if the transaction is programmatically reversible.
+          type: boolean
+        is_test:
+          description: Denotes if the transaction is a test.
+          type: boolean
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        updated_at:
+          description: Last updated date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        payment_details:
+          description: Additional details regarding gateway and transaction
+          type: object
+          $ref: '#/components/schemas/payment_details'
+    refund_line_item:
+      required:
+      - identifier
+      - quantity
+      - order_item_identifier
+      type: object
+      properties:
+        identifier:
+          description: ID for individual item within the Refund. Must be a unique value per item.
+          type: string
+          example: RF12554113
+        quantity:
+          description: Quantity of products refunded for the order item.
+          type: integer
+          example: 2
+        order_item_identifier:
+          description: Order item identifier for product that has been refunded.
           type: string
           example: '123'
-        first_name:
-          description: Customer first name
+    item:
+      required:
+      - identifier
+      - quantity
+      - quantity_shipped
+      - quantity_canceled
+      - product_identifier
+      - variant_identifier
+      - title
+      - tags
+      - product_amount_cents
+      - tax_amount_cents
+      - discount_amount_cents
+      - unit_price_amount_cents
+      type: object
+      properties:
+        identifier:
+          description: ID for individual item within the Order. Must be a unique value per item.
           type: string
-          example: Carmine
-        last_name:
-          description: Customer last name
+          example: '123'
+        concept:
+          description: 'A unique identifier for the retail "concept" or "brand" to which the product belongs. This differentiates similar products when the your company has multiple retail concepts. Must work with Professional Services when using this field to uniquely identify catalog entries.
+
+            '
           type: string
-          example: Customer
-        email:
-          description: Customer contact email
+          example: Best Brand
+        upc:
+          description: UPC that represents the product for this order item. Required unless SKU is present.
           type: string
-          example: customer@example.com
-        phone:
-          description: Customer phone
+          example: '888812345678'
+        sku:
+          description: An identifier which matches the catalog and represents the product for this order item. Required unless UPC is present.
           type: string
-          example: 202-555-1212
+          example: '888812345678'
+        quantity:
+          description: Number of units of a particular line item that has been ordered. Must be less than or equal to 1000. Must be greater than or equal to the sum of quantity_shipped and quantity_canceled.
+          type: integer
+          example: 2
+        quantity_shipped:
+          description: Number of units of a particular line item that have shipped. Must be less than or equal to quantity.
+          type: integer
+        quantity_canceled:
+          description: Number of units of a particular line item that have been canceled. Must be less than or equal to quantity.
+          type: integer
+        quantity_refunded:
+          description: Number of units of a particular line item that have already been refunded. Must be less than or equal to quantity_shipped.
+          type: integer
+        tracking_number:
+          description: The tracking number for the package containing this order item. This allows operations to scan the tracking number for undeliverable items.
+          type: string
+          example: 1Z9999999999999999
+        reverse_tracking_number:
+          description: The return tracking number for the package containing this order item. This allows operations to scan the tracking number for items returned by the customer.
+          type: string
+          example: 1Z9999999999999999
+        dropship_identifier:
+          description: ID used to track item that was drop shipped.
+          type: string
+          example: '4441212'
+        shipped_date:
+          description: Date when the order was shipped, in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        return_policy_end_date:
+          description: Date when the order item is no longer eligible for return, in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        product_identifier:
+          description: Id unique to that product (ex. same SKU from different vendors). Send SKU if no product_identifier exists.
+          type: string
+          example: 1234-5678
+        variant_identifier:
+          description: Variant can help disambiguate specific variant of a product class (e.g. blue color of a sweater product) -- product_identifier can be the same as variant_identifier in some systems. Send SKU if no variant_identifier exists.
+          type: string
+          example: 1234-5678
+        variants:
+          description: Array of product variants for the parent item. Including variants improves exchange functionality in the return portal.
+          type: array
+          items:
+            $ref: '#/components/schemas/product_variant'
+        title:
+          description: Title of product
+          type: string
+          example: Fuzzy red t-shirt
+        product_amount_cents:
+          description: Raw product amount without taxes or discounts. Sum of all the units for that line item (quantity x unit_price_amount for a given product).
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        tax_amount_cents:
+          description: Line item tax amount in cents.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        discount_amount_cents:
+          description: Line item discount amount in cents.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        unit_price_amount_cents:
+          description: Unit price amount in cents of a single unit of a product.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        tags:
+          description: 'An array of tags associated with the given order. Current supported tags are: FinalSale, gift-card, canceled, Thirdparty, pickup_in_store, cs-required'
+          type: array
+          items:
+            type: string
+        image_url:
+          description: Product image file link.
+          type: string
+          example: https://example.com/img.jpg
+        weight:
+          description: Product weight, in lbs.
+          type: number
+          example: 2.2
     order:
       required:
       - identifier
@@ -206,6 +377,33 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/discount'
+    customer:
+      required:
+      - identifier
+      - email
+      description: Customer who placed order.
+      type: object
+      properties:
+        identifier:
+          description: Reference to customer record in your OMS
+          type: string
+          example: '123'
+        first_name:
+          description: Customer first name
+          type: string
+          example: Carmine
+        last_name:
+          description: Customer last name
+          type: string
+          example: Customer
+        email:
+          description: Customer contact email
+          type: string
+          example: customer@example.com
+        phone:
+          description: Customer phone
+          type: string
+          example: 202-555-1212
     product_variant:
       required:
       - attributes
@@ -318,175 +516,45 @@ components:
         country_code_of_origin:
           description: Used in conjunction with harmonized system code for International Returns
           type: string
-    refund_line_item:
+    refund:
       required:
       - identifier
-      - quantity
-      - order_item_identifier
-      type: object
-      properties:
-        identifier:
-          description: ID for individual item within the Refund. Must be a unique value per item.
-          type: string
-          example: RF12554113
-        quantity:
-          description: Quantity of products refunded for the order item.
-          type: integer
-          example: 2
-        order_item_identifier:
-          description: Order item identifier for product that has been refunded.
-          type: string
-          example: '123'
-    item:
-      required:
-      - identifier
-      - quantity
-      - quantity_shipped
-      - quantity_canceled
-      - product_identifier
-      - variant_identifier
-      - title
-      - tags
-      - product_amount_cents
-      - tax_amount_cents
-      - discount_amount_cents
-      - unit_price_amount_cents
-      type: object
-      properties:
-        identifier:
-          description: ID for individual item within the Order. Must be a unique value per item.
-          type: string
-          example: '123'
-        concept:
-          description: 'A unique identifier for the retail "concept" or "brand" to which the product belongs. This differentiates similar products when the your company has multiple retail concepts. Must work with Professional Services when using this field to uniquely identify catalog entries.
-
-            '
-          type: string
-          example: Best Brand
-        upc:
-          description: UPC that represents the product for this order item. Required unless SKU is present.
-          type: string
-          example: '888812345678'
-        sku:
-          description: An identifier which matches the catalog and represents the product for this order item. Required unless UPC is present.
-          type: string
-          example: '888812345678'
-        quantity:
-          description: Number of units of a particular line item that has been ordered. Must be less than or equal to 1000. Must be greater than or equal to the sum of quantity_shipped and quantity_canceled.
-          type: integer
-          example: 2
-        quantity_shipped:
-          description: Number of units of a particular line item that have shipped. Must be less than or equal to quantity.
-          type: integer
-        quantity_canceled:
-          description: Number of units of a particular line item that have been canceled. Must be less than or equal to quantity.
-          type: integer
-        quantity_refunded:
-          description: Number of units of a particular line item that have already been refunded. Must be less than or equal to quantity_shipped.
-          type: integer
-        tracking_number:
-          description: The tracking number for the package containing this order item. This allows operations to scan the tracking number for undeliverable items.
-          type: string
-          example: 1Z9999999999999999
-        reverse_tracking_number:
-          description: The return tracking number for the package containing this order item. This allows operations to scan the tracking number for items returned by the customer.
-          type: string
-          example: 1Z9999999999999999
-        dropship_identifier:
-          description: ID used to track item that was drop shipped.
-          type: string
-          example: '4441212'
-        shipped_date:
-          description: Date when the order was shipped, in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        return_policy_end_date:
-          description: Date when the order item is no longer eligible for return, in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        product_identifier:
-          description: Id unique to that product (ex. same SKU from different vendors). Send SKU if no product_identifier exists.
-          type: string
-          example: 1234-5678
-        variant_identifier:
-          description: Variant can help disambiguate specific variant of a product class (e.g. blue color of a sweater product) -- product_identifier can be the same as variant_identifier in some systems. Send SKU if no variant_identifier exists.
-          type: string
-          example: 1234-5678
-        variants:
-          description: Array of product variants for the parent item. Including variants improves exchange functionality in the return portal.
-          type: array
-          items:
-            $ref: '#/components/schemas/product_variant'
-        title:
-          description: Title of product
-          type: string
-          example: Fuzzy red t-shirt
-        product_amount_cents:
-          description: Raw product amount without taxes or discounts. Sum of all the units for that line item (quantity x unit_price_amount for a given product).
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        tax_amount_cents:
-          description: Line item tax amount in cents.
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        discount_amount_cents:
-          description: Line item discount amount in cents.
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        unit_price_amount_cents:
-          description: Unit price amount in cents of a single unit of a product.
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        tags:
-          description: 'An array of tags associated with the given order. Current supported tags are: FinalSale, gift-card, canceled, Thirdparty, pickup_in_store, cs-required'
-          type: array
-          items:
-            type: string
-        image_url:
-          description: Product image file link.
-          type: string
-          example: https://example.com/img.jpg
-        weight:
-          description: Product weight, in lbs.
-          type: number
-          example: 2.2
-    discount:
-      required:
-      - identifier
-      - code
-      - amount_cents
+      - refund_transactions
+      - total_refund_amount_cents
+      - refund_line_items
       - created_at
       type: object
       properties:
         identifier:
+          description: Unique identifier for the refund.
           type: string
-        code:
-          type: string
-        type:
-          description: Discount type. E.g. "Fixed_amount", "Percentage", "Shipping", "Bonus", "Fixed_Price", "Alt_Pricing".
-          type: string
-          example: Percentage
-        amount_cents:
+          example: RF12554113
+        total_refund_amount_cents:
+          description: The total amount refunded for the returned items.
           type: integer
           format: int
           minimum: 0
-          example: 100
+        refund_line_items:
+          description: List of line items included in the refund.
+          type: array
+          items:
+            $ref: '#/components/schemas/refund_line_item'
+        note:
+          description: Description of the refund.
+          type: string
         created_at:
           description: Creation date in ISO 8601 format, UTC.
           type: string
           example: '2018-08-30T15:39:42.025Z'
-        updated_at:
-          description: Last updated date in ISO 8601 format, UTC.
+        rma_identifier:
+          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
           type: string
-          example: '2018-08-30T15:39:42.025Z'
+          example: RMA12345
+        tags:
+          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
+          type: array
+          items:
+            type: string
     payment_details:
       type: object
       properties:
@@ -560,91 +628,27 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/order'
-    refund:
+    discount:
       required:
       - identifier
-      - refund_transactions
-      - total_refund_amount_cents
-      - refund_line_items
-      - created_at
-      type: object
-      properties:
-        identifier:
-          description: Unique identifier for the refund.
-          type: string
-          example: RF12554113
-        total_refund_amount_cents:
-          description: The total amount refunded for the returned items.
-          type: integer
-          format: int
-          minimum: 0
-        refund_line_items:
-          description: List of line items included in the refund.
-          type: array
-          items:
-            $ref: '#/components/schemas/refund_line_item'
-        note:
-          description: Description of the refund.
-          type: string
-        created_at:
-          description: Creation date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        rma_identifier:
-          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
-          type: string
-          example: RMA12345
-        tags:
-          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
-          type: array
-          items:
-            type: string
-    transaction:
-      required:
-      - identifier
-      - parent_identifier
+      - code
       - amount_cents
-      - status
-      - type
-      - gateway
-      - is_online
-      - is_test
       - created_at
-      - updated_at
-      - payment_details
       type: object
       properties:
         identifier:
-          description: Unique identifier for a transaction.  These details are used to reconcile instant exchanges.
           type: string
-          example: adf56c018de8438dbc7d86017cc10f1d
-        parent_identifier:
+        code:
           type: string
-          example: a0bf7bddb0928a7e69b51110c14831c0
+        type:
+          description: Discount type. E.g. "Fixed_amount", "Percentage", "Shipping", "Bonus", "Fixed_Price", "Alt_Pricing".
+          type: string
+          example: Percentage
         amount_cents:
-          description: Raw amount of a particular transaction - all transactions amounts in a given order should sum to order amount.
           type: integer
           format: int
           minimum: 0
           example: 100
-        status:
-          description: Current status of the transaction. E.g. "PENDING" "SUCCESS" "FAILURE".
-          type: string
-          example: PENDING
-        type:
-          description: Type refers to credit/debit from merchants point of view. E.g. "AUTHORIZATION" "CAPTURE" "SALE" "REFUND" "VOID".
-          type: string
-          example: CAPTURE
-        gateway:
-          description: Name of the payment gateway.
-          type: string
-          example: QuikPay
-        is_online:
-          description: Denotes if the transaction is programmatically reversible.
-          type: boolean
-        is_test:
-          description: Denotes if the transaction is a test.
-          type: boolean
         created_at:
           description: Creation date in ISO 8601 format, UTC.
           type: string
@@ -653,7 +657,3 @@ components:
           description: Last updated date in ISO 8601 format, UTC.
           type: string
           example: '2018-08-30T15:39:42.025Z'
-        payment_details:
-          description: Additional details regarding gateway and transaction
-          type: object
-          $ref: '#/components/schemas/payment_details'

@@ -46,6 +46,14 @@ paths:
       - Sku
 components:
   schemas:
+    variants:
+      type: object
+      properties:
+        variants:
+          description: Array of product variants for the parent item.
+          type: array
+          items:
+            $ref: '#/components/schemas/variant'
     variant:
       required:
       - attributes
@@ -100,11 +108,3 @@ components:
           description: Product page link
           type: string
           example: https://example.com/fuzzy-green
-    variants:
-      type: object
-      properties:
-        variants:
-          description: Array of product variants for the parent item.
-          type: array
-          items:
-            $ref: '#/components/schemas/variant'
