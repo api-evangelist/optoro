@@ -126,19 +126,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    To:
-      required:
-      - identifier
-      - type
-      properties:
-        identifier:
-          type: string
-          example: 1352
-          description: Identifier for the to location visible in reporting. ie Numeric Warehouse ID, Store Number.
-        type:
-          type: string
-          example: Store
-          description: Type of the to location visible in reporting. ie Warehouse, Store, Customer
     Carton:
       required:
       - details
@@ -156,19 +143,6 @@ components:
           items:
             $ref: '#/components/schemas/Detail'
           description: The sku or unit lines expected in this carton.
-    From:
-      required:
-      - identifier
-      - type
-      properties:
-        identifier:
-          type: string
-          example: 22
-          description: Identifier for the from location visible in reporting. ie Numeric Warehouse ID, Store Number, Ecom
-        type:
-          type: string
-          example: Warehouse
-          description: Type of the from location visible in reporting. ie Warehouse, Ecom, Returns Portal, Store
     Detail:
       required:
       - line_identifier
@@ -253,47 +227,6 @@ components:
           type: string
           example: SET-S123456
           description: Optional field to group the items. This field is applicable only when the `details_type` is 'unit'.
-    Label:
-      required:
-      - type
-      - name
-      - value
-      properties:
-        type:
-          type: string
-          enum:
-          - barcode
-          - text
-          example: text
-          description: This indicates whether the field printed on the label should be text or a barcode. Allowed values - 'barcode' and 'text'.
-        name:
-          type: string
-          example: title
-          description: This is the title of the field being printed. It is always readable as text. For example, if you want to print a SKU barcode on the label you can pass the SKU string in this field and the barcode in `label.value` field. Alternatively if you want to print the size of the product you should pass 'size' in this field and the size of the product (such as 'medium') in the `label.value` field.
-        value:
-          type: string
-          example: Printing this title
-          description: The corresponding value of the `label.name`. If 'barcode' is passed in `label.type` then the value will always be printed as a barcode.
-    Reference:
-      properties:
-        type:
-          type: string
-          enum:
-          - StockTransferOrder
-          - RA
-          - RMA
-          - ForwardOrder
-          - ReturnsPortalOrder
-          example: RMA
-          description: Reference type.
-        identifier:
-          type: string
-          example: 12345
-          description: Reference identifier, used with `reference.type` to find the reference during receiving. This is a scannable identifier in Receiving.
-        alternate_identifier:
-          type: string
-          example: OR12345678
-          description: Reference alternate identifier, should be scannable, used to locate the reference during receiving if the main identifier isn't always physically on the carton.
     AdvanceShipNotice:
       required:
       - program_identifier
@@ -373,6 +306,73 @@ components:
           format: date-time
           example: '2019-10-16T10:59:20'
           description: Optional, a timestamp denoting when the ASN message was sent.
+    Label:
+      required:
+      - type
+      - name
+      - value
+      properties:
+        type:
+          type: string
+          enum:
+          - barcode
+          - text
+          example: text
+          description: This indicates whether the field printed on the label should be text or a barcode. Allowed values - 'barcode' and 'text'.
+        name:
+          type: string
+          example: title
+          description: This is the title of the field being printed. It is always readable as text. For example, if you want to print a SKU barcode on the label you can pass the SKU string in this field and the barcode in `label.value` field. Alternatively if you want to print the size of the product you should pass 'size' in this field and the size of the product (such as 'medium') in the `label.value` field.
+        value:
+          type: string
+          example: Printing this title
+          description: The corresponding value of the `label.name`. If 'barcode' is passed in `label.type` then the value will always be printed as a barcode.
+    To:
+      required:
+      - identifier
+      - type
+      properties:
+        identifier:
+          type: string
+          example: 1352
+          description: Identifier for the to location visible in reporting. ie Numeric Warehouse ID, Store Number.
+        type:
+          type: string
+          example: Store
+          description: Type of the to location visible in reporting. ie Warehouse, Store, Customer
+    Reference:
+      properties:
+        type:
+          type: string
+          enum:
+          - StockTransferOrder
+          - RA
+          - RMA
+          - ForwardOrder
+          - ReturnsPortalOrder
+          example: RMA
+          description: Reference type.
+        identifier:
+          type: string
+          example: 12345
+          description: Reference identifier, used with `reference.type` to find the reference during receiving. This is a scannable identifier in Receiving.
+        alternate_identifier:
+          type: string
+          example: OR12345678
+          description: Reference alternate identifier, should be scannable, used to locate the reference during receiving if the main identifier isn't always physically on the carton.
+    From:
+      required:
+      - identifier
+      - type
+      properties:
+        identifier:
+          type: string
+          example: 22
+          description: Identifier for the from location visible in reporting. ie Numeric Warehouse ID, Store Number, Ecom
+        type:
+          type: string
+          example: Warehouse
+          description: Type of the from location visible in reporting. ie Warehouse, Ecom, Returns Portal, Store
   securitySchemes:
     jwtAuth:
       type: http

@@ -156,26 +156,6 @@ paths:
       tags:
       - Facilities
 components:
-  responses:
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
-    Unauthorized:
-      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
-
-        '
-    BadRequest:
-      description: Malformed request. Check structure of JSON payload.
-  parameters:
-    api-version:
-      name: Optiturn-Facilities-Version
-      in: header
-      description: 'The version of the API to use.
-
-        '
-      required: true
-      schema:
-        type: string
-        example: '2024-08-08'
   schemas:
     facility:
       type: object
@@ -282,6 +262,26 @@ components:
               message:
                 type: string
                 description: Human-readable description of the validation failure.
+  responses:
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    Unauthorized:
+      description: 'Missing, expired, or invalid OAuth bearer token. Request a new token from the auth service.
+
+        '
+    BadRequest:
+      description: Malformed request. Check structure of JSON payload.
+  parameters:
+    api-version:
+      name: Optiturn-Facilities-Version
+      in: header
+      description: 'The version of the API to use.
+
+        '
+      required: true
+      schema:
+        type: string
+        example: '2024-08-08'
   securitySchemes:
     oAuth2:
       type: oauth2

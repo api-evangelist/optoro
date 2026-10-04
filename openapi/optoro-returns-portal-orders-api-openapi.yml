@@ -35,6 +35,78 @@ paths:
       - Returns Portal Orders
 components:
   schemas:
+    discount:
+      required:
+      - identifier
+      - code
+      - amount_cents
+      - created_at
+      type: object
+      properties:
+        identifier:
+          type: string
+        code:
+          type: string
+        type:
+          description: Discount type. E.g. "Fixed_amount", "Percentage", "Shipping", "Bonus", "Fixed_Price", "Alt_Pricing".
+          type: string
+          example: Percentage
+        amount_cents:
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        updated_at:
+          description: Last updated date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+    returns_portal_orders:
+      type: object
+      required:
+      - returns_portal_order
+      properties:
+        returns_portal_order:
+          description: An orders object.
+          type: object
+          required:
+          - orders
+          properties:
+            orders:
+              description: Array of orders.
+              type: array
+              items:
+                $ref: '#/components/schemas/order'
+    customer:
+      required:
+      - identifier
+      - email
+      description: Customer who placed order.
+      type: object
+      properties:
+        identifier:
+          description: Reference to customer record in your OMS
+          type: string
+          example: '123'
+        first_name:
+          description: Customer first name
+          type: string
+          example: Carmine
+        last_name:
+          description: Customer last name
+          type: string
+          example: Customer
+        email:
+          description: Customer contact email
+          type: string
+          example: customer@example.com
+        phone:
+          description: Customer phone
+          type: string
+          example: 202-555-1212
     transaction:
       required:
       - identifier
@@ -93,6 +165,118 @@ components:
           description: Additional details regarding gateway and transaction
           type: object
           $ref: '#/components/schemas/payment_details'
+    product_variant:
+      required:
+      - attributes
+      - allow_backorder
+      - product_identifier
+      - variant_identifier
+      - product_amount_cents
+      - quantity_in_stock
+      - inventory_managed_by_platform
+      - title
+      type: object
+      properties:
+        attributes:
+          description: A list of attributes that describe the variant. Such as colors or sizes. See variant attributes.
+          type: array
+          items:
+            required:
+            - name
+            - value
+            type: object
+            properties:
+              name:
+                description: Name of attribute describing the variant.
+                type: string
+              value:
+                description: Value of the attribute name.
+                type: string
+          example:
+          - name: Color
+            value: Green
+          - name: Size
+            value: XL
+        allow_backorder:
+          description: Specifies if the variant is allowed to be backordered if out of stock.
+          type: boolean
+        product_identifier:
+          description: Id unique to that product (ex. same SKU from different vendors). Send SKU if no product_identifier exists.
+          type: string
+          example: 1234-5678
+        variant_identifier:
+          description: Id unique to that variant. product_identifier can be the same as variant_identifier in some systems. Send SKU if no variant_identifier exists.
+          type: string
+          example: 1234-5678
+        product_amount_cents:
+          description: Unit price amount in cents for a single unit of a product.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        currency:
+          description: Currency code. Must be ISO-4217 reference. E.g. "USD".
+          type: string
+          example: USD
+        quantity_in_stock:
+          description: The quantity in stock for the specific variant.
+          type: integer
+          example: 2
+        inventory_managed_by_platform:
+          description: True if Inventory is managed by Returns Portal provider.
+          type: boolean
+        sku:
+          description: The SKU for the variant.
+          type: string
+          example: '888812345678'
+        title:
+          description: The title for the variant
+          type: string
+          example: Fuzzy green t-shirt
+        unit_price_amount_cents:
+          description: Unit price amount in cents of a single unit of a product.
+          type: integer
+          format: int
+          minimum: 0
+          example: 100
+        image_urls:
+          description: An array of image strings associated with the given parent.
+          type: array
+          items:
+            type: string
+          example:
+          - https://example.com/img-1.jpg
+          - https://example.com/img-2.jpg
+        image_hash:
+          description: Hash value of the product image.
+          type: string
+          example: 14758f1afd44c09b7992073ccf00b43d
+        weight:
+          description: Product weight, in lbs.
+          type: number
+          example: 2.2
+        height:
+          description: Product height, in inches.
+          type: number
+          example: 1.2
+        width:
+          description: Product width, in inches.
+          type: number
+          example: 3.5
+        length:
+          description: Product length, in inches.
+          type: number
+          example: 6.4
+        product_url:
+          description: Product page link.
+          type: string
+          example: https://example.com/fuzzy-green
+        harmonized_system_code:
+          description: Product harmonized system code
+          type: string
+        country_code_of_origin:
+          description: Used in conjunction with harmonized system code for International Returns
+          type: string
     refund_line_item:
       required:
       - identifier
@@ -112,6 +296,48 @@ components:
           description: Order item identifier for product that has been refunded.
           type: string
           example: '123'
+    address:
+      required:
+      - name
+      - street1
+      - city
+      - state
+      - zip_code
+      - country_code
+      type: object
+      properties:
+        name:
+          description: Name of person.
+          type: string
+          example: Carmine Customer
+        street1:
+          description: The street address.
+          type: string
+          example: 123 Fake St.
+        street2:
+          description: An optional second line for the street address, for suite or other similar additions.
+          type: string
+          example: STE 1200
+        city:
+          description: The city for this address.
+          type: string
+          example: Utiopiannapolis
+        state:
+          description: The state or province for this address.
+          type: string
+          example: WA
+        zip_code:
+          description: The zip or postal code for this address.
+          type: string
+          example: '99877'
+        country_code:
+          description: The country code for this address.
+          type: string
+          example: US
+        phone:
+          description: Phone number.
+          type: string
+          example: 202-555-1212
     item:
       required:
       - identifier
@@ -233,6 +459,60 @@ components:
           description: Product weight, in lbs.
           type: number
           example: 2.2
+    payment_details:
+      type: object
+      properties:
+        avs_result_code:
+          description: Response code from credit card company for correct AVS
+          type: string
+        cvv_result_code:
+          description: Response code from credit card company for correct CVV
+          type: string
+        credit_card_company:
+          type: string
+        gift_card_id:
+          type: string
+        gift_card_code:
+          type: string
+    refund:
+      required:
+      - identifier
+      - refund_transactions
+      - total_refund_amount_cents
+      - refund_line_items
+      - created_at
+      type: object
+      properties:
+        identifier:
+          description: Unique identifier for the refund.
+          type: string
+          example: RF12554113
+        total_refund_amount_cents:
+          description: The total amount refunded for the returned items.
+          type: integer
+          format: int
+          minimum: 0
+        refund_line_items:
+          description: List of line items included in the refund.
+          type: array
+          items:
+            $ref: '#/components/schemas/refund_line_item'
+        note:
+          description: Description of the refund.
+          type: string
+        created_at:
+          description: Creation date in ISO 8601 format, UTC.
+          type: string
+          example: '2018-08-30T15:39:42.025Z'
+        rma_identifier:
+          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
+          type: string
+          example: RMA12345
+        tags:
+          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
+          type: array
+          items:
+            type: string
     order:
       required:
       - identifier
@@ -377,283 +657,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/discount'
-    customer:
-      required:
-      - identifier
-      - email
-      description: Customer who placed order.
-      type: object
-      properties:
-        identifier:
-          description: Reference to customer record in your OMS
-          type: string
-          example: '123'
-        first_name:
-          description: Customer first name
-          type: string
-          example: Carmine
-        last_name:
-          description: Customer last name
-          type: string
-          example: Customer
-        email:
-          description: Customer contact email
-          type: string
-          example: customer@example.com
-        phone:
-          description: Customer phone
-          type: string
-          example: 202-555-1212
-    product_variant:
-      required:
-      - attributes
-      - allow_backorder
-      - product_identifier
-      - variant_identifier
-      - product_amount_cents
-      - quantity_in_stock
-      - inventory_managed_by_platform
-      - title
-      type: object
-      properties:
-        attributes:
-          description: A list of attributes that describe the variant. Such as colors or sizes. See variant attributes.
-          type: array
-          items:
-            required:
-            - name
-            - value
-            type: object
-            properties:
-              name:
-                description: Name of attribute describing the variant.
-                type: string
-              value:
-                description: Value of the attribute name.
-                type: string
-          example:
-          - name: Color
-            value: Green
-          - name: Size
-            value: XL
-        allow_backorder:
-          description: Specifies if the variant is allowed to be backordered if out of stock.
-          type: boolean
-        product_identifier:
-          description: Id unique to that product (ex. same SKU from different vendors). Send SKU if no product_identifier exists.
-          type: string
-          example: 1234-5678
-        variant_identifier:
-          description: Id unique to that variant. product_identifier can be the same as variant_identifier in some systems. Send SKU if no variant_identifier exists.
-          type: string
-          example: 1234-5678
-        product_amount_cents:
-          description: Unit price amount in cents for a single unit of a product.
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        currency:
-          description: Currency code. Must be ISO-4217 reference. E.g. "USD".
-          type: string
-          example: USD
-        quantity_in_stock:
-          description: The quantity in stock for the specific variant.
-          type: integer
-          example: 2
-        inventory_managed_by_platform:
-          description: True if Inventory is managed by Returns Portal provider.
-          type: boolean
-        sku:
-          description: The SKU for the variant.
-          type: string
-          example: '888812345678'
-        title:
-          description: The title for the variant
-          type: string
-          example: Fuzzy green t-shirt
-        unit_price_amount_cents:
-          description: Unit price amount in cents of a single unit of a product.
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        image_urls:
-          description: An array of image strings associated with the given parent.
-          type: array
-          items:
-            type: string
-          example:
-          - https://example.com/img-1.jpg
-          - https://example.com/img-2.jpg
-        image_hash:
-          description: Hash value of the product image.
-          type: string
-          example: 14758f1afd44c09b7992073ccf00b43d
-        weight:
-          description: Product weight, in lbs.
-          type: number
-          example: 2.2
-        height:
-          description: Product height, in inches.
-          type: number
-          example: 1.2
-        width:
-          description: Product width, in inches.
-          type: number
-          example: 3.5
-        length:
-          description: Product length, in inches.
-          type: number
-          example: 6.4
-        product_url:
-          description: Product page link.
-          type: string
-          example: https://example.com/fuzzy-green
-        harmonized_system_code:
-          description: Product harmonized system code
-          type: string
-        country_code_of_origin:
-          description: Used in conjunction with harmonized system code for International Returns
-          type: string
-    refund:
-      required:
-      - identifier
-      - refund_transactions
-      - total_refund_amount_cents
-      - refund_line_items
-      - created_at
-      type: object
-      properties:
-        identifier:
-          description: Unique identifier for the refund.
-          type: string
-          example: RF12554113
-        total_refund_amount_cents:
-          description: The total amount refunded for the returned items.
-          type: integer
-          format: int
-          minimum: 0
-        refund_line_items:
-          description: List of line items included in the refund.
-          type: array
-          items:
-            $ref: '#/components/schemas/refund_line_item'
-        note:
-          description: Description of the refund.
-          type: string
-        created_at:
-          description: Creation date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        rma_identifier:
-          description: Identifier of the RMA.  Used to help disambiguate if there are multiple RMAs for the same order.
-          type: string
-          example: RMA12345
-        tags:
-          description: 'Tags associated with the given refund. Current supported tags are:<br><ul><li>`ignore_refund`: refund is ignored and does not influence return eligibility</li></ul>'
-          type: array
-          items:
-            type: string
-    payment_details:
-      type: object
-      properties:
-        avs_result_code:
-          description: Response code from credit card company for correct AVS
-          type: string
-        cvv_result_code:
-          description: Response code from credit card company for correct CVV
-          type: string
-        credit_card_company:
-          type: string
-        gift_card_id:
-          type: string
-        gift_card_code:
-          type: string
-    address:
-      required:
-      - name
-      - street1
-      - city
-      - state
-      - zip_code
-      - country_code
-      type: object
-      properties:
-        name:
-          description: Name of person.
-          type: string
-          example: Carmine Customer
-        street1:
-          description: The street address.
-          type: string
-          example: 123 Fake St.
-        street2:
-          description: An optional second line for the street address, for suite or other similar additions.
-          type: string
-          example: STE 1200
-        city:
-          description: The city for this address.
-          type: string
-          example: Utiopiannapolis
-        state:
-          description: The state or province for this address.
-          type: string
-          example: WA
-        zip_code:
-          description: The zip or postal code for this address.
-          type: string
-          example: '99877'
-        country_code:
-          description: The country code for this address.
-          type: string
-          example: US
-        phone:
-          description: Phone number.
-          type: string
-          example: 202-555-1212
-    returns_portal_orders:
-      type: object
-      required:
-      - returns_portal_order
-      properties:
-        returns_portal_order:
-          description: An orders object.
-          type: object
-          required:
-          - orders
-          properties:
-            orders:
-              description: Array of orders.
-              type: array
-              items:
-                $ref: '#/components/schemas/order'
-    discount:
-      required:
-      - identifier
-      - code
-      - amount_cents
-      - created_at
-      type: object
-      properties:
-        identifier:
-          type: string
-        code:
-          type: string
-        type:
-          description: Discount type. E.g. "Fixed_amount", "Percentage", "Shipping", "Bonus", "Fixed_Price", "Alt_Pricing".
-          type: string
-          example: Percentage
-        amount_cents:
-          type: integer
-          format: int
-          minimum: 0
-          example: 100
-        created_at:
-          description: Creation date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'
-        updated_at:
-          description: Last updated date in ISO 8601 format, UTC.
-          type: string
-          example: '2018-08-30T15:39:42.025Z'

@@ -153,19 +153,24 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    From:
+    To:
       required:
       - identifier
       - type
+      - original_identifier
       properties:
         identifier:
-          type: string
-          example: 22
-          description: The from location for the ASN this receipt is being sent for.
+          type: integer
+          example: 1352
+          description: Identifier for the to location. The internal OptiTurn warehouse identifier where this unit was received. This will be provided by your implementation team.
         type:
           type: string
-          example: Warehouse
-          description: Type of the from location. Matches the Inbound ASN from.type.
+          example: Store
+          description: Type of the to location
+        original_identifier:
+          type: string
+          example: 42
+          description: Identifier for the original location. ie Numeric Warehouse ID, Store Number.
     Reference:
       properties:
         type:
@@ -189,21 +194,16 @@ components:
           type: string
           example: OR12345678
           description: Reference alternate identifier, should be scannable, used to locate the reference during receiving if the main identifier isn't always physically on the carton. Matches reference.alternate_identifier passed in Inbound ASN.
-    To:
+    From:
       required:
       - identifier
       - type
-      - original_identifier
       properties:
         identifier:
-          type: integer
-          example: 1352
-          description: Identifier for the to location. The internal OptiTurn warehouse identifier where this unit was received. This will be provided by your implementation team.
+          type: string
+          example: 22
+          description: The from location for the ASN this receipt is being sent for.
         type:
           type: string
-          example: Store
-          description: Type of the to location
-        original_identifier:
-          type: string
-          example: 42
-          description: Identifier for the original location. ie Numeric Warehouse ID, Store Number.
+          example: Warehouse
+          description: Type of the from location. Matches the Inbound ASN from.type.

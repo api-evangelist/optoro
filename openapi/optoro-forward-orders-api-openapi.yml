@@ -74,6 +74,32 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    Order:
+      required:
+      - identifier
+      - items
+      properties:
+        identifier:
+          type: string
+          example: 1193Z93LL
+          description: A unique order identifier for this order. Must be a unique value per order.
+        concept:
+          type: string
+          example: Best Brand
+          description: A unique identifier for the 'concept' or 'brand' the order was placed from. This allows a client to delineate orders across different concepts or brands when the client’s parent company has multiple retail brands.
+        postal_code:
+          type: string
+          example: 55127
+          description: The postal / zip code portion of the order's shipping address.
+        created_at:
+          type: string
+          example: '2023-09-11T00:00:00.000Z'
+          description: iso8601 formatted date string representing when the order was created (YYYY-MM-DDT00:00:00).
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+          description: An array of order items in the order.
     ForwardOrders:
       required:
       - orders
@@ -101,32 +127,6 @@ components:
           type: string
           example: 10231030023
           description: The corresponding value of name
-    Order:
-      required:
-      - identifier
-      - items
-      properties:
-        identifier:
-          type: string
-          example: 1193Z93LL
-          description: A unique order identifier for this order. Must be a unique value per order.
-        concept:
-          type: string
-          example: Best Brand
-          description: A unique identifier for the 'concept' or 'brand' the order was placed from. This allows a client to delineate orders across different concepts or brands when the client’s parent company has multiple retail brands.
-        postal_code:
-          type: string
-          example: 55127
-          description: The postal / zip code portion of the order's shipping address.
-        created_at:
-          type: string
-          example: '2023-09-11T00:00:00.000Z'
-          description: iso8601 formatted date string representing when the order was created (YYYY-MM-DDT00:00:00).
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Item'
-          description: An array of order items in the order.
     Item:
       required:
       - identifier

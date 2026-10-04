@@ -666,17 +666,10 @@ components:
         '
     BadRequest:
       description: Malformed request. Check structure of JSON payload.
-  parameters:
-    versionHeader:
-      name: Optiturn-Catalogs-Version
-      in: header
-      description: 'The version of the API to use. Must specify ''2023-08-01'' to use the current API version. Defaults to ''2018-05-10'' if omitted.
-
-        '
-      required: true
-      schema:
-        type: string
   schemas:
+    sku:
+      type: string
+      minLength: 1
     ValidationFailure:
       type: object
       required:
@@ -710,9 +703,16 @@ components:
               message:
                 type: string
                 description: Human-readable description of the validation failure.
-    sku:
-      type: string
-      minLength: 1
+  parameters:
+    versionHeader:
+      name: Optiturn-Catalogs-Version
+      in: header
+      description: 'The version of the API to use. Must specify ''2023-08-01'' to use the current API version. Defaults to ''2018-05-10'' if omitted.
+
+        '
+      required: true
+      schema:
+        type: string
   securitySchemes:
     oAuth2:
       type: oauth2

@@ -43,6 +43,75 @@ paths:
       - Exchange Orders
 components:
   schemas:
+    customer:
+      required:
+      - identifier
+      - email
+      description: Customer who placed order.
+      type: object
+      properties:
+        identifier:
+          description: Reference to customer record in your OMS
+          type: string
+          example: '123'
+        first_name:
+          description: Customer first name
+          type: string
+          example: Carmine
+        last_name:
+          description: Customer last name
+          type: string
+          example: Customer
+        email:
+          description: Customer contact email
+          type: string
+          example: customer@example.com
+        phone:
+          description: Customer phone
+          type: string
+          example: 202-555-1212
+    exchange_order_address:
+      required:
+      - name
+      - street1
+      - city
+      - province
+      - postal_code
+      - country_code
+      type: object
+      properties:
+        name:
+          description: Name of person.
+          type: string
+          example: Carmine Customer
+        street1:
+          description: The street address.
+          type: string
+          example: 123 Fake St.
+        street2:
+          description: An optional second line for the street address, for suite or other similar additions.
+          type: string
+          example: STE 1200
+        city:
+          description: The city for this address.
+          type: string
+          example: Utiopiannapolis
+        province:
+          description: The state or province for this address.
+          type: string
+          example: WA
+        postal_code:
+          description: The zip or postal code for this address.
+          type: string
+          example: '99877'
+        country_code:
+          description: The country code for this address.
+          type: string
+          example: US
+        phone:
+          description: Phone number.
+          type: string
+          example: 202-555-1212
     exchange_order_item:
       required:
       - sku
@@ -116,60 +185,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/exchange_order_return_item'
-    customer:
-      required:
-      - identifier
-      - email
-      description: Customer who placed order.
-      type: object
-      properties:
-        identifier:
-          description: Reference to customer record in your OMS
-          type: string
-          example: '123'
-        first_name:
-          description: Customer first name
-          type: string
-          example: Carmine
-        last_name:
-          description: Customer last name
-          type: string
-          example: Customer
-        email:
-          description: Customer contact email
-          type: string
-          example: customer@example.com
-        phone:
-          description: Customer phone
-          type: string
-          example: 202-555-1212
-    exchange_order_return_item:
-      required:
-      - original_sku
-      - original_item_identifier
-      - quantity
-      type: object
-      properties:
-        title:
-          description: Title of product
-          type: string
-          example: Pink Shirt
-        original_sku:
-          description: SKU of the item from original order that is being exchanged.
-          type: string
-          example: '888812345678'
-        original_item_identifier:
-          description: Order line item identifier of the item from original order that is being exchanged.
-          type: string
-          example: '1234'
-        quantity:
-          description: The number of units within the order for each SKU (or UPC). Must be less than or equal to 1000.
-          type: integer
-          example: 2
-        concept:
-          description: The concept brand that this item belongs to.
-          type: string
-          example: acme
     exchange_order:
       required:
       - currency
@@ -252,48 +267,33 @@ components:
               type: string
               description: Optoro generated number for order payment
               example: 8ef05fb8-283e-4edd-a3d7-47f9fe520cfe
-    exchange_order_address:
+    exchange_order_return_item:
       required:
-      - name
-      - street1
-      - city
-      - province
-      - postal_code
-      - country_code
+      - original_sku
+      - original_item_identifier
+      - quantity
       type: object
       properties:
-        name:
-          description: Name of person.
+        title:
+          description: Title of product
           type: string
-          example: Carmine Customer
-        street1:
-          description: The street address.
+          example: Pink Shirt
+        original_sku:
+          description: SKU of the item from original order that is being exchanged.
           type: string
-          example: 123 Fake St.
-        street2:
-          description: An optional second line for the street address, for suite or other similar additions.
+          example: '888812345678'
+        original_item_identifier:
+          description: Order line item identifier of the item from original order that is being exchanged.
           type: string
-          example: STE 1200
-        city:
-          description: The city for this address.
+          example: '1234'
+        quantity:
+          description: The number of units within the order for each SKU (or UPC). Must be less than or equal to 1000.
+          type: integer
+          example: 2
+        concept:
+          description: The concept brand that this item belongs to.
           type: string
-          example: Utiopiannapolis
-        province:
-          description: The state or province for this address.
-          type: string
-          example: WA
-        postal_code:
-          description: The zip or postal code for this address.
-          type: string
-          example: '99877'
-        country_code:
-          description: The country code for this address.
-          type: string
-          example: US
-        phone:
-          description: Phone number.
-          type: string
-          example: 202-555-1212
+          example: acme
     exchange_order_response:
       required:
       - order_identifier

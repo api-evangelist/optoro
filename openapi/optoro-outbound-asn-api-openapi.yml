@@ -174,83 +174,6 @@ paths:
       - Outbound Asn
 components:
   schemas:
-    cartons:
-      type: array
-      description: Each object (carton) below represents a single box or pallet which has been shipped.
-      items:
-        required:
-        - details
-        type: object
-        properties:
-          identifier:
-            type: string
-            description: The scannable identifier for this carton.
-            example: T00028546
-          reference:
-            $ref: '#/components/schemas/reference'
-          details:
-            $ref: '#/components/schemas/details'
-          sorting_template_name:
-            type: string
-            description: Name of the last assigned directed sorting template to this carton
-            example: Disposable Items
-    address:
-      type: object
-      description: The address this shipment is going to. See below for fields.
-      required:
-      - name
-      - street
-      - state
-      - city
-      - zip
-      properties:
-        name:
-          type: string
-          description: The address to name.
-          example: Bliss Diamond
-        company:
-          type: string
-          description: The address company line (under name)
-          example: Acme
-        street:
-          type: string
-          description: The street address.
-          example: 6001 N Dr South
-        street2:
-          type: string
-          description: An optional second line for the street address, for suite or other similar additions.
-          example: 60 N Dr North
-        city:
-          type: string
-          description: The city for this address.
-          example: LIBERTYVILLE
-        state:
-          type: string
-          description: The state for this address.
-          example: OH
-        zip:
-          type: string
-          description: The zip code for this address.
-          example: '43125'
-    reference:
-      type: object
-      description: Reference to a Stock Transfer Order, Return Authorization, RMA, Forward Order or Returns Portal Order which can be used to reconcile against. See below for fields.
-      required:
-      - type
-      - identifier
-      properties:
-        type:
-          type: string
-          description: 'Reference type, allowed values are: StockTransferOrder, RA, RMA, ForwardOrder or ReturnsPortalOrder.'
-          example: RA
-        identifier:
-          type: string
-          description: 'Reference identifier - for example: the RMA number or RA Number associated with this shipment. This is a pass through from the inbound ASN.'
-          example: '573001000000'
-        alternate_identifier:
-          type: string
-          description: Secondary reference identifier.
-          example: '742769019332'
     details:
       type: array
       description: The sku or unit lines expected in this carton. See below for details fields.
@@ -325,3 +248,80 @@ components:
             type: string
             description: Merchant name for the unit
             example: POLO RALPH LAUREN
+    cartons:
+      type: array
+      description: Each object (carton) below represents a single box or pallet which has been shipped.
+      items:
+        required:
+        - details
+        type: object
+        properties:
+          identifier:
+            type: string
+            description: The scannable identifier for this carton.
+            example: T00028546
+          reference:
+            $ref: '#/components/schemas/reference'
+          details:
+            $ref: '#/components/schemas/details'
+          sorting_template_name:
+            type: string
+            description: Name of the last assigned directed sorting template to this carton
+            example: Disposable Items
+    reference:
+      type: object
+      description: Reference to a Stock Transfer Order, Return Authorization, RMA, Forward Order or Returns Portal Order which can be used to reconcile against. See below for fields.
+      required:
+      - type
+      - identifier
+      properties:
+        type:
+          type: string
+          description: 'Reference type, allowed values are: StockTransferOrder, RA, RMA, ForwardOrder or ReturnsPortalOrder.'
+          example: RA
+        identifier:
+          type: string
+          description: 'Reference identifier - for example: the RMA number or RA Number associated with this shipment. This is a pass through from the inbound ASN.'
+          example: '573001000000'
+        alternate_identifier:
+          type: string
+          description: Secondary reference identifier.
+          example: '742769019332'
+    address:
+      type: object
+      description: The address this shipment is going to. See below for fields.
+      required:
+      - name
+      - street
+      - state
+      - city
+      - zip
+      properties:
+        name:
+          type: string
+          description: The address to name.
+          example: Bliss Diamond
+        company:
+          type: string
+          description: The address company line (under name)
+          example: Acme
+        street:
+          type: string
+          description: The street address.
+          example: 6001 N Dr South
+        street2:
+          type: string
+          description: An optional second line for the street address, for suite or other similar additions.
+          example: 60 N Dr North
+        city:
+          type: string
+          description: The city for this address.
+          example: LIBERTYVILLE
+        state:
+          type: string
+          description: The state for this address.
+          example: OH
+        zip:
+          type: string
+          description: The zip code for this address.
+          example: '43125'

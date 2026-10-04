@@ -56,10 +56,10 @@ components:
   responses:
     InternalServerError:
       description: Internal Server Error
-    ServerUnavailable:
-      description: Client Server Unavailable
     Unauthorized:
       description: Not Authorized. A new Authentication Token from the client’s services and retry the request.
+    ServerUnavailable:
+      description: Client Server Unavailable
     BadRequest:
       description: Bad Request
   schemas:

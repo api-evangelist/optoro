@@ -100,11 +100,11 @@ paths:
       - OAuth
 components:
   responses:
-    InternalServerError:
-      description: Server error. Retry request using an exponential backoff.
-    UnprocessableEntity:
-      description: The request could not not be processed. Ensure parameter values are valid.
-    NotFound:
-      description: The requested resource could not be found.
     BadRequest:
       description: Malformed request. Check structure of JSON payload.
+    InternalServerError:
+      description: Server error. Retry request using an exponential backoff.
+    NotFound:
+      description: The requested resource could not be found.
+    UnprocessableEntity:
+      description: The request could not not be processed. Ensure parameter values are valid.
