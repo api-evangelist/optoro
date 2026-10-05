@@ -1,0 +1,12 @@
+{
+ "url": "https://developer.optoro.com/_bundle/openapi/rmas/@5/openapi.yaml?download",
+ "requested_url": "https://developer.optoro.com/_bundle/openapi/rmas/@5/openapi.yaml?download",
+ "status": 200,
+ "content_type": "application/yaml",
+ "bytes": 40809,
+ "sha256": "1a9925d3f445a803bf9a69e3254ada29a73c2c5f260fa76bdb0db818104eab04",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the archived file is byte-identical to what the provider serves."
+}
