@@ -1,26 +1,39 @@
-generated: '2026-08-26'
-method: derived
-source: openapi/optoro-catalogs-openapi.yml, openapi/optoro-drop-ship-openapi.yml, openapi/optoro-facilities-openapi.yml,
-  openapi/optoro-rtv-openapi.yml
+generated: '2026-10-14'
+method: none
+source: openapi/optoro-catalog-entry-updates-api-openapi.yml, openapi/optoro-facilities-api-openapi.yml,
+  openapi/optoro-listings-api-openapi.yml, openapi/optoro-orders-api-openapi.yml, openapi/optoro-shipments-api-openapi.yml,
+  openapi/optoro-vendor-updates-api-openapi.yml
 schemes:
 - name: oAuth2
-  source: openapi/optoro-catalogs-openapi.yml
+  source: openapi/optoro-catalog-entry-updates-api-openapi.yml
   flows:
   - flow: clientCredentials
     tokenUrl: https://auth.optiturn.com/oauth/token
 - name: oAuth2
-  source: openapi/optoro-drop-ship-openapi.yml
+  source: openapi/optoro-facilities-api-openapi.yml
   flows:
   - flow: clientCredentials
     tokenUrl: https://auth.optiturn.com/oauth/token
 - name: oAuth2
-  source: openapi/optoro-facilities-openapi.yml
+  source: openapi/optoro-listings-api-openapi.yml
   flows:
   - flow: clientCredentials
     tokenUrl: https://auth.optiturn.com/oauth/token
 - name: oAuth2
-  source: openapi/optoro-rtv-openapi.yml
+  source: openapi/optoro-orders-api-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+- name: oAuth2
+  source: openapi/optoro-shipments-api-openapi.yml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://auth.optiturn.com/oauth/token
+- name: oAuth2
+  source: openapi/optoro-vendor-updates-api-openapi.yml
   flows:
   - flow: clientCredentials
     tokenUrl: https://auth.optiturn.com/oauth/token
 scopes: []
+note: The OAuth2 security scheme(s) in the OpenAPI declare no scopes, and no security requirement
+  references one.
