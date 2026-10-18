@@ -3,6 +3,7 @@ provider: Optoro
 generated_by: planning/capability-mapping/scripts/classify_capabilities.py
 model: claude-opus-5
 frame:
+- Electrical Components & Equipment
 - Transportation & Logistics
 min_confidence: 0.7
 capability_model:
@@ -11,7 +12,7 @@ capability_model:
   attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
     CC BY 4.0
   notice: NOTICE
-edge_count: 8
+edge_count: 11
 edges:
 - tag: Catalog Entry Updates
   spec_file: optoro-catalog-entry-updates-api-openapi.yml
@@ -64,6 +65,35 @@ edges:
   reason: ASN creation/update feeding warehouse receiving and reconciliation of inbound cartons maps to
     Inbound Operations Management; slight ambiguity versus manifest documentation, but the stated purpose
     is receipt.
+- tag: Orders
+  spec_file: optoro-orders-api-openapi.yml
+  capability_id: BC-520.40
+  capability_id_l1: BC-520
+  capability_name: Order Fulfilment Management
+  confidence: 0.75
+  evidence: '"enables customers to fulfill orders for available units and lots that are in stock"; operations
+    "Create an order", "Cancel an order by identifier"'
+  reason: Full CRUD lifecycle over drop-ship fulfilment orders including batch creation and cancellation
+    — order fulfilment orchestration, not sales opportunity or billing.
+- tag: Drop Shipment Cancellation
+  spec_file: optoro-drop-shipment-cancellation-api-openapi.yml
+  capability_id: BC-520.40
+  capability_id_l1: BC-520
+  capability_name: Order Fulfilment Management
+  confidence: 0.72
+  evidence: '"used to communicate to the client once an order has been shipped or cancelled from OptiTurn,
+    to close an order within the client''s OMS"'
+  reason: Posts order cancellation events back to the client's order management system to close the order
+    — order fulfilment orchestration.
+- tag: Drop Shipment Confirmation
+  spec_file: optoro-drop-shipment-confirmation-api-openapi.yml
+  capability_id: BC-520.40
+  capability_id_l1: BC-520
+  capability_name: Order Fulfilment Management
+  confidence: 0.72
+  evidence: '"to communicate to the client once an order has been shipped or cancelled from OptiTurn,
+    to close an order within the client''s OMS"'
+  reason: Ship confirmation posted back to the client's OMS to close the order — order fulfilment execution/orchestration.
 - tag: External Bin Changes
   spec_file: optoro-external-bin-changes-api-openapi.yml
   capability_id: BC-2460.20
@@ -73,17 +103,16 @@ edges:
   evidence: '"Perform a bin-change for a unit or a location." schemas: Location, LocationBinChange, Unit,
     UnitBinChange'
   reason: Warehouse bin/location movement of units — in-house storage operations (slotting, location management).
-- tag: Orders
-  spec_file: optoro-orders-api-openapi.yml
-  capability_id: BC-2330.30
-  capability_id_l1: BC-2330
-  capability_name: Distributed Order Fulfilment Management
-  confidence: 0.7
-  evidence: '"Drop Ship Orders API" — "enables customers to fulfill orders for available units and lots
-    that are in stock"; operations "Create an order", "Cancel an order by identifier"'
-  reason: Order capture and lifecycle for drop-ship fulfilment of returned/excess inventory, matching
-    distributed/vendor drop-ship fulfilment. Some ambiguity versus generic order fulfilment management.
-  recovered_from: vertical-retail-consumer-goods-edges.json
+- tag: Outbound Asn
+  spec_file: optoro-outbound-asn-api-openapi.yml
+  capability_id: BC-520.50
+  capability_id_l1: BC-520
+  capability_name: Logistics Operations Management
+  confidence: 0.72
+  evidence: '"allows clients to be notified when a shipment is leaving the Optoro WMS"; schemas "cartons",
+    "address"'
+  reason: Outbound shipment notification with carton and address detail is warehouse/transport execution
+    within logistics operations.
 - tag: Rmas
   spec_file: optoro-rmas-api-openapi.yml
   capability_id: BC-2460.50
