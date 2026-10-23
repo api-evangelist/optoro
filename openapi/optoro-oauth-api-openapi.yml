@@ -108,3 +108,9 @@ components:
       description: The requested resource could not be found.
     UnprocessableEntity:
       description: The request could not not be processed. Ensure parameter values are valid.
+x-provenance:
+  method: harvested
+  publisher: Optoro
+  source: https://developer.optoro.com/_bundle/openapi/auth/openapi.yaml?download
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

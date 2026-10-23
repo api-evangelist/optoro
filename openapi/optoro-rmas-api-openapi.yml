@@ -839,3 +839,9 @@ components:
           description: The condition of the item when it was received at the warehouse.
           type: string
           example: N
+x-provenance:
+  method: harvested
+  publisher: Optoro
+  source: https://developer.optoro.com/_bundle/openapi/rmas/@5/openapi.yaml?download
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
